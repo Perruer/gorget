@@ -54,11 +54,11 @@ Some model providers may train their models on your requests, which can be a pri
   US SSN, UUID, and more.
 - **Entities support**:
     - Peek at
-    our [default entities](https://github.com/protectai/llm-guard/blob/main/llm_guard/input_scanners/anonymize.py#L26-L40).
+    our [default entities](https://github.com/Perruer/gorget/blob/main/gorget/input_scanners/anonymize.py#L26-L40).
     - View
     the [Presidio's supported entities](https://microsoft.github.io/presidio/supported_entities/#list-of-supported-entities).
     - And, we've
-    got [custom regex patterns](https://github.com/protectai/llm-guard/blob/main/llm_guard/resources/sensisitive_patterns.json)
+    got [custom regex patterns](https://github.com/Perruer/gorget/blob/main/gorget/resources/sensisitive_patterns.json)
     too!
 - **Tailored recognizers**:
     - Balance speed vs. accuracy of the recognizers.
@@ -77,7 +77,7 @@ Some model providers may train their models on your requests, which can be a pri
 Initialize the `Vault`: The Vault archives data that's been redacted.
 
 ```python
-from llm_guard.vault import Vault
+from gorget.vault import Vault
 
 vault = Vault()
 ```
@@ -85,8 +85,8 @@ vault = Vault()
 Configure the `Anonymize` Scanner:
 
 ```python
-from llm_guard.input_scanners import Anonymize
-from llm_guard.input_scanners.anonymize_helpers import BERT_LARGE_NER_CONF
+from gorget.input_scanners import Anonymize
+from gorget.input_scanners.anonymize_helpers import BERT_LARGE_NER_CONF
 
 scanner = Anonymize(vault, preamble="Insert before prompt", allowed_names=["John Doe"], hidden_names=["Test LLC"],
                     recognizer_conf=BERT_LARGE_NER_CONF, language="en")

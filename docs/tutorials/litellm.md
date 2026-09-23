@@ -1,6 +1,6 @@
-# Apply LLM Guard Content Mod across 100+ LLMs w/ LiteLLM
+# Apply Gorget Content Mod across 100+ LLMs w/ LiteLLM
 
-Use LLM Guard with LiteLLM Proxy to moderate calls across Anthropic/Bedrock/Gemini/etc. LLMs with [LiteLLM](https://github.com/BerriAI/litellm)
+Use Gorget with LiteLLM Proxy to moderate calls across Anthropic/Bedrock/Gemini/etc. LLMs with [LiteLLM](https://github.com/BerriAI/litellm)
 
 
 LiteLLM currently supports requests in:
@@ -12,16 +12,17 @@ LiteLLM currently supports requests in:
 
 ## Pre-Requisites
 - Install litellm proxy - `pip install 'litellm[proxy]'`
-- Setup [LLM Guard Docker](../api/deployment.md#from-docker)
+- Setup [Gorget Docker](../api/deployment.md#from-docker)
 
 ## Quick Start
 
-Let's add LLM Guard content mod for Anthropic API calls
+Let's add Gorget content mod for Anthropic API calls
 
-Set the LLM Guard API Base in your environment
+Set the Gorget API Base in your environment. LiteLLM's built-in `llmguard_moderations`
+callback talks to the Gorget API unchanged, so it still reads the `LLM_GUARD_API_BASE` variable.
 
 ```bash
-export LLM_GUARD_API_BASE="http://0.0.0.0:8192" # deployed llm guard api
+export LLM_GUARD_API_BASE="http://0.0.0.0:8192" # deployed Gorget API
 export ANTHROPIC_API_KEY="sk-..." # anthropic api key
 ```
 
@@ -47,12 +48,12 @@ litellm --config /path/to/config.yaml
 
 - Make a regular /chat/completion call
 
-- Check your proxy logs for any statement with `LLM Guard:`
+- Check your proxy logs for any statement with `Gorget:`
 
 Expected results:
 
 ```bash
-LLM Guard: Received response - {"sanitized_prompt": "hello world", "is_valid": true, "scanners": { "Regex": 0.0 }}
+Gorget: Received response - {"sanitized_prompt": "hello world", "is_valid": true, "scanners": { "Regex": 0.0 }}
 ```
 ### Turn on/off per key
 
@@ -68,7 +69,7 @@ model_list:
 
 litellm_settings:
     callbacks: ["llmguard_moderations"]
-    llm_guard_mode: "key-specific"
+    gorget_mode: "key-specific"
 
 general_settings:
     database_url: "postgres://.." # postgres db url
@@ -84,7 +85,7 @@ curl --location 'http://localhost:4000/key/generate' \
 --data '{
     "models": ["claude-3.5-sonnet"],
     "permissions": {
-        "enable_llm_guard_check": true # 👈 KEY CHANGE
+        "enable_gorget_check": true # 👈 KEY CHANGE
     }
 }'
 
@@ -110,7 +111,7 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
 ```yaml
 litellm_settings:
     callbacks: ["llmguard_moderations"]
-    llm_guard_mode: "request-specific"
+    gorget_mode: "request-specific"
 ```
 
 **2. Create new key**
@@ -149,7 +150,7 @@ response = client.chat.completions.create(
     extra_body={ # pass in any provider-specific param, if not supported by openai, https://docs.litellm.ai/docs/completion/input#provider-specific-params
         "metadata": {
             "permissions": {
-                "enable_llm_guard_check": True # 👈 KEY CHANGE
+                "enable_gorget_check": True # 👈 KEY CHANGE
             },
         }
     }

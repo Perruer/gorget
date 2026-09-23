@@ -2,7 +2,7 @@
 
 ## From source
 
-1. Copy the code from [llm_guard_api](https://github.com/protectai/llm-guard/tree/main/llm_guard_api)
+1. Copy the code from [gorget_api](https://github.com/Perruer/gorget/tree/main/gorget_api)
 
 2. Install dependencies (preferably in a virtual environment)
 ```bash
@@ -26,7 +26,7 @@ make run
 Or using CLI:
 
 ```bash
-llm_guard_api ./config/scanners.yml
+gorget_api ./config/scanners.yml
 ```
 
 ### Using gunicorn
@@ -41,7 +41,7 @@ It will preload models in the shared memory among workers, which can be useful f
 
 ## From Docker
 
-Either build the Docker image or pull our official image from [Docker Hub](https://hub.docker.com/r/laiyer/llm-guard-api).
+Either build the Docker image or pull our official image from [Docker Hub](https://hub.docker.com/r/ghcr.io/perruer/gorget-api).
 
 In order to build the Docker image, run the following command:
 
@@ -53,13 +53,13 @@ make build-docker-cuda-multi # If you have a GPU
 Or pull the official image:
 
 ```bash
-docker pull laiyer/llm-guard-api:latest
+docker pull ghcr.io/perruer/gorget-api:latest
 ```
 
 Now, you can run the Docker container:
 
 ```bash
-docker run -d -p 8000:8000 -e LOG_LEVEL='DEBUG' -e AUTH_TOKEN='my-token' laiyer/llm-guard-api:latest
+docker run -d -p 8000:8000 -e LOG_LEVEL='DEBUG' -e AUTH_TOKEN='my-token' ghcr.io/perruer/gorget-api:latest
 ```
 
 This will start the API on port 8000. You can now access the API at `http://localhost:8000/swagger.json`.
@@ -67,7 +67,7 @@ This will start the API on port 8000. You can now access the API at `http://loca
 If you want to use a custom configuration, you can mount a volume to `/home/user/app/config`:
 
 ```bash
-docker run -d -p 8000:8000 -e APP_WORKERS=1 -e AUTH_TOKEN='my-token' -e LOG_LEVEL='DEBUG' -v ./entrypoint.sh:/home/user/app/entrypoint.sh -v ./config/scanners.yml:/home/user/app/config/scanners.yml laiyer/llm-guard-api:latest
+docker run -d -p 8000:8000 -e APP_WORKERS=1 -e AUTH_TOKEN='my-token' -e LOG_LEVEL='DEBUG' -v ./entrypoint.sh:/home/user/app/entrypoint.sh -v ./config/scanners.yml:/home/user/app/config/scanners.yml ghcr.io/perruer/gorget-api:latest
 ```
 
 !!! warning

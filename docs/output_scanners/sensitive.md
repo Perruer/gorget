@@ -33,7 +33,7 @@ It uses mechanisms from the [Anonymize](../input_scanners/anonymize.md) scanner.
 Configure the scanner:
 
 ```python
-from llm_guard.output_scanners import Sensitive
+from gorget.output_scanners import Sensitive
 
 scanner = Sensitive(entity_types=["PERSON", "EMAIL"], redact=True)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

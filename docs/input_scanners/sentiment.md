@@ -24,7 +24,7 @@ indicating a potentially negative sentiment.
 ## Usage
 
 ```python
-from llm_guard.input_scanners import Sentiment
+from gorget.input_scanners import Sentiment
 
 scanner = Sentiment(threshold=0)
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

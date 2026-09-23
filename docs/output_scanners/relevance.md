@@ -25,7 +25,7 @@ You can select an embedding model suited to your needs. By default, it
 uses [BAAI/bge-base-en-v1.5](https://huggingface.co/BAAI/bge-base-en-v1.5).
 
 ```python
-from llm_guard.output_scanners import Relevance
+from gorget.output_scanners import Relevance
 
 scanner = Relevance(threshold=0.5)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

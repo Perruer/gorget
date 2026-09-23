@@ -15,7 +15,7 @@ output, it checks the Vault to find the original info and uses it to replace the
 First, you'll need the Vault since it keeps all the original values:
 
 ```python
-from llm_guard.vault import Vault
+from gorget.vault import Vault
 
 vault = Vault()
 ```
@@ -23,7 +23,7 @@ vault = Vault()
 Then, set up the Deanonymize scanner with the Vault:
 
 ```python
-from llm_guard.output_scanners import Deanonymize
+from gorget.output_scanners import Deanonymize
 
 scanner = Deanonymize(vault)
 sanitized_model_output, is_valid, risk_score = scanner.scan(sanitized_prompt, model_output)

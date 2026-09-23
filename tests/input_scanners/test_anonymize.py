@@ -2,13 +2,13 @@ import re
 
 import pytest
 
-from llm_guard.exception import LLMGuardValidationError
-from llm_guard.input_scanners.anonymize import (
+from gorget.exception import GorgetValidationError
+from gorget.input_scanners.anonymize import (
     ALL_SUPPORTED_LANGUAGES,
     DEFAULT_ENTITY_TYPES,
     Anonymize,
 )
-from llm_guard.input_scanners.anonymize_helpers import (
+from gorget.input_scanners.anonymize_helpers import (
     BERT_BASE_NER_CONF,
     BERT_LARGE_NER_CONF,
     BERT_ZH_NER_CONF,
@@ -17,7 +17,7 @@ from llm_guard.input_scanners.anonymize_helpers import (
     DISTILBERT_AI4PRIVACY_v2_CONF,
     get_regex_patterns,
 )
-from llm_guard.vault import Vault
+from gorget.vault import Vault
 
 _preamble = (
     "In the following prompt, I am going remove certain information and replace each instance with "
@@ -314,7 +314,7 @@ def test_scan_zh(settings, prompt, expected_prompt, expected_valid, expected_sco
 def test_scan_unknown():
     try:
         Anonymize(Vault(), language="unknown")
-    except LLMGuardValidationError as e:
+    except GorgetValidationError as e:
         assert str(e) == f"Language must be in the list of allowed: {ALL_SUPPORTED_LANGUAGES}"
 
 

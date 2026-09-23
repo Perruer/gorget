@@ -27,7 +27,7 @@ Models:
 ## Usage
 
 ```python
-from llm_guard.input_scanners import BanCompetitors
+from gorget.input_scanners import BanCompetitors
 
 competitor_list = ["Competitor1", "CompetitorOne", "C1", ...]  # Extensive list of competitors
 scanner = BanCompetitors(competitors=competitor_list, redact=False, threshold=0.5)

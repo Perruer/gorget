@@ -27,7 +27,7 @@ publish: ## Publish to PyPI.
 	@echo "Publishing to PyPI..."
 	@python -m pip install --upgrade twine
 	@python -m twine check dist/*
-	@python -m twine upload --repository llm-guard dist/*
+	@python -m twine upload --repository gorget dist/*
 
 .PHONY: docs-serve
 docs-serve: ## Serve documentation using mkdocs.
@@ -37,7 +37,7 @@ docs-serve: ## Serve documentation using mkdocs.
 .PHONY: clean
 clean: ## Clean and Remove build files and pytest cache.
 	@echo "Cleaning up..."
-	@rm -rf build dist .pytest_cache .egg-info llm_guard.egg-info
+	@rm -rf build dist .pytest_cache .egg-info gorget.egg-info
 
 .PHONY: help
 help: ## List all targets and help information.

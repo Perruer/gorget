@@ -1,7 +1,7 @@
 import pytest
 
-from llm_guard.input_scanners.regex import MatchType
-from llm_guard.output_scanners.regex import Regex
+from gorget.input_scanners.regex import MatchType
+from gorget.output_scanners.regex import Regex
 
 
 @pytest.mark.parametrize(

@@ -21,7 +21,7 @@ threshold to determine if the website is malicious. A score above the threshold 
 ## Usage
 
 ```python
-from llm_guard.output_scanners import MaliciousURLs
+from gorget.output_scanners import MaliciousURLs
 
 scanner = MaliciousURLs(threshold=0.7)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

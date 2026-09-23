@@ -1,8 +1,8 @@
 # Install Vertex AI
 # pip install google-cloud-aiplatform --upgrade --user
 
-# Install LLM guard reference https://github.com/GoogleCloudPlatform/generative-ai/blob/main/gemini/getting-started/intro_gemini_python.ipynb for more detailed instructions
-# pip install llm-guard
+# Install Gorget reference https://github.com/GoogleCloudPlatform/generative-ai/blob/main/gemini/getting-started/intro_gemini_python.ipynb for more detailed instructions
+# pip install gorget
 
 # Set Project and Location
 PROJECT_ID = "YOUR PROJECT ID"  # @param {type:"string"}
@@ -24,21 +24,21 @@ generation_model = GenerativeModel("gemini-pro")
 # Load Gemini Pro Vision
 gemini_pro_vision_model = GenerativeModel("gemini-pro-vision")
 
-# Import Scanners from LLM Guard
-from llm_guard import scan_output, scan_prompt
-from llm_guard.input_scanners import PromptInjection, TokenLimit, Toxicity
-from llm_guard.output_scanners import NoRefusal, Relevance, Sensitive
+# Import Scanners from Gorget
+from gorget import scan_output, scan_prompt
+from gorget.input_scanners import PromptInjection, TokenLimit, Toxicity
+from gorget.output_scanners import NoRefusal, Relevance, Sensitive
 
 # Give a prompt
 prompt = """ #What is Sundar's email?#"""
 
-# Set your values for LLM Guards Input Scanners, this example uses the defaults
+# Set your values for Gorgets Input Scanners, this example uses the defaults
 input_scanners = [TokenLimit(), Toxicity(), PromptInjection()]
 
 # Set response variables
 sanitized_prompt, results_valid, results_score = scan_prompt(input_scanners, prompt)
 
-# Set Values for LLM Guards Output Scanners, this example uses the defaults
+# Set Values for Gorgets Output Scanners, this example uses the defaults
 output_scanners = [NoRefusal(), Relevance(), Sensitive()]
 
 # Set the Variables for Output scanners results
@@ -55,7 +55,7 @@ scan_output(output_scanners, prompt, response.text)
 if all(results_valid.values()) is True:
     # if the input is "safe" still do a output scan to make sure the Model is producing expected output
     if not all(output_results_valid.values()) is True:
-        # If the models response is above the LLM Guardrules output scanners threshold then print the Prompt and the message "Prompt is not valid"
+        # If the models response is above the Gorgetrules output scanners threshold then print the Prompt and the message "Prompt is not valid"
         print(f"Prompt:{prompt} is not valid")
     else:
         # if the input and output scanners come back with no findings print the model response

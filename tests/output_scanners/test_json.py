@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.json import JSON
+from gorget.output_scanners.json import JSON
 
 
 @pytest.mark.parametrize(

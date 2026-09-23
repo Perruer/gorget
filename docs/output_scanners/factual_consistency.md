@@ -26,7 +26,7 @@ as contradictory.
 ## Usage
 
 ```python
-from llm_guard.output_scanners import FactualConsistency
+from gorget.output_scanners import FactualConsistency
 
 scanner = FactualConsistency(minimum_score=0.7)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

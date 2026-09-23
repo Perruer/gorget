@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.gibberish import Gibberish
+from gorget.output_scanners.gibberish import Gibberish
 
 
 @pytest.mark.parametrize(

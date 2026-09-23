@@ -16,7 +16,7 @@ If the URL is not accessible (for instance, due to a broken link or server error
 ## Usage
 
 ```python
-from llm_guard.output_scanners import URLReachability
+from gorget.output_scanners import URLReachability
 
 scanner = URLReachability(success_status_codes=[200, 201, 202, 301, 302], timeout=1)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

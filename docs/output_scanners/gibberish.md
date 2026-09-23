@@ -19,8 +19,8 @@ Utilizing the model [madhurjindal/autonlp-Gibberish-Detector-492513457](https://
 ## Usage
 
 ```python
-from llm_guard.output_scanners import Gibberish
-from llm_guard.output_scanners.gibberish import MatchType
+from gorget.output_scanners import Gibberish
+from gorget.output_scanners.gibberish import MatchType
 
 scanner = Gibberish(match_type=MatchType.FULL)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

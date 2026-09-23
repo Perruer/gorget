@@ -20,8 +20,8 @@ The scanner uses the [unitary/unbiased-toxic-roberta](https://huggingface.co/uni
 ## Usage
 
 ```python
-from llm_guard.input_scanners import Toxicity
-from llm_guard.input_scanners.toxicity import MatchType
+from gorget.input_scanners import Toxicity
+from gorget.input_scanners.toxicity import MatchType
 
 scanner = Toxicity(threshold=0.5, match_type=MatchType.SENTENCE)
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

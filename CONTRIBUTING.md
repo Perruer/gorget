@@ -4,21 +4,21 @@
 
 ## Reporting Issues
 
-If you would like to report a bug, request a new feature or enhancement, follow [this link](https://github.com/protectai/llm-guard/issues/new/choose).
+If you would like to report a bug, request a new feature or enhancement, follow [this link](https://github.com/Perruer/gorget/issues/new/choose).
 
 ## Submitting Changes
 
 1. Fork the repository on GitHub.
 2. Make the changes to your forked repository.
-3. When you are finished making changes or improvements, create a pull request from your forked repository to our original repository.
-4. The core team will review your pull request and provide feedback.
+3. When you are finished making changes or improvements, create a pull request from your forked repository to this repository.
+4. The maintainer will review your pull request and provide feedback.
 
 ## Project Setup
 
 ```bash
 # clone the repo
-git clone -b dev https://github.com/protectai/llm-guard.git
-cd llm-guard
+git clone https://github.com/Perruer/gorget.git
+cd gorget
 
 # create a virtual environment
 python -m venv venv

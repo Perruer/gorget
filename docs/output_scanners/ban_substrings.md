@@ -34,7 +34,7 @@ prompt, making it more sophisticated.
 ### 2. Prevent harmful substrings in the model's output
 
 There is also a dataset prepared of harmful substrings for
-prompts: [output_stop_substrings.json](https://github.com/protectai/llm-guard/blob/main/llm_guard/resources/output_stop_substrings.json)
+prompts: [output_stop_substrings.json](https://github.com/Perruer/gorget/blob/main/gorget/resources/output_stop_substrings.json)
 
 ### 3. Hide mentions of competitors
 
@@ -43,8 +43,8 @@ List all competitor names and pass them to the scanner. It will replace all comp
 ## Usage
 
 ```python
-from llm_guard.output_scanners import BanSubstrings
-from llm_guard.input_scanners.ban_substrings import MatchType
+from gorget.output_scanners import BanSubstrings
+from gorget.input_scanners.ban_substrings import MatchType
 
 scanner = BanSubstrings(
   substrings=["forbidden", "unwanted"],

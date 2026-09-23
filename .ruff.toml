@@ -1,7 +1,7 @@
 extend-include = ["*.ipynb"]
 line-length = 100
 src = [
-    "llm_guard",
+    "gorget",
     "tests",
 ]
 exclude = ["examples/google_gemini.py"]
@@ -29,7 +29,7 @@ builtins-ignorelist = ["input"]
 [lint.isort]
 combine-as-imports = true
 known-first-party = [
-    "llm_guard",
+    "gorget",
     "tests",
 ]
 split-on-trailing-comma = false

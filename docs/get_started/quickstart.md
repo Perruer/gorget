@@ -1,4 +1,4 @@
-# Getting started with LLM Guard
+# Getting started with Gorget
 
 Each scanner can be used individually, or using the `scan_prompt` function.
 
@@ -7,14 +7,14 @@ Each scanner can be used individually, or using the `scan_prompt` function.
 You can import an individual scanner and use it to evaluate the prompt or the output:
 
 ```python
-from llm_guard.input_scanners import BanTopics
+from gorget.input_scanners import BanTopics
 
 scanner = BanTopics(topics=["violence"], threshold=0.5)
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)
 ```
 
 ```python
-from llm_guard.output_scanners import Bias
+from gorget.output_scanners import Bias
 
 scanner = Bias(threshold=0.5)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)
@@ -29,9 +29,9 @@ sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)
 For prompt:
 
 ```python
-from llm_guard import scan_prompt
-from llm_guard.input_scanners import Anonymize, PromptInjection, TokenLimit, Toxicity
-from llm_guard.vault import Vault
+from gorget import scan_prompt
+from gorget.input_scanners import Anonymize, PromptInjection, TokenLimit, Toxicity
+from gorget.vault import Vault
 
 vault = Vault()
 input_scanners = [Anonymize(vault), Toxicity(), TokenLimit(), PromptInjection()]
@@ -47,8 +47,8 @@ print(f"Prompt: {sanitized_prompt}")
 For output:
 
 ```python
-from llm_guard import scan_output
-from llm_guard.output_scanners import Deanonymize, NoRefusal, Relevance, Sensitive
+from gorget import scan_output
+from gorget.output_scanners import Deanonymize, NoRefusal, Relevance, Sensitive
 
 vault = Vault()
 output_scanners = [Deanonymize(vault), NoRefusal(), Relevance(), Sensitive()]

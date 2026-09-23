@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.invisible_text import InvisibleText
+from gorget.input_scanners.invisible_text import InvisibleText
 
 
 def convert_to_tag_chars(input_string: str):

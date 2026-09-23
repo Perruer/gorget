@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.secrets import Secrets
+from gorget.input_scanners.secrets import Secrets
 
 
 @pytest.mark.parametrize(
@@ -31,8 +31,8 @@ from llm_guard.input_scanners.secrets import Secrets
             1.0,
         ),  # Prompt with a JWT token
         (
-            "Use this URL: https://username:password@llm-guard.com",
-            "Use this URL: https://username:******@llm-guard.com",
+            "Use this URL: https://username:password@gorget.com",
+            "Use this URL: https://username:******@gorget.com",
             False,
             1.0,
         ),  # Prompt with HTTP basic auth

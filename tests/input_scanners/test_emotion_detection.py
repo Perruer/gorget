@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.emotion_detection import EmotionDetection
+from gorget.input_scanners.emotion_detection import EmotionDetection
 
 
 @pytest.mark.parametrize(

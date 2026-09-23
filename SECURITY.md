@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-We take the security of our software products seriously, which includes not only the code base but also the scanners provided within. If you have found any issues that might have security implications, please send a report to [security@protectai.com].
+We take the security of Gorget seriously, which includes not only the code base but also the scanners provided within. If you have found any issues that might have security implications, please report them privately through [GitHub Security Advisories](https://github.com/Perruer/gorget/security/advisories/new).
 
 **Do NOT open an issue on the GitHub repository, as doing so makes it public knowledge.**
 
@@ -29,8 +29,8 @@ We appreciate your help in improving the security of our project. If you're inte
 
 After you've submitted a vulnerability, we are committed to addressing it in the following manner:
 
-1. We will confirm the receipt of your vulnerability report within 3 business days.
-2. We will investigate the issue and update you every week about our progress.
+1. We will confirm the receipt of your vulnerability report within 7 days.
+2. We will investigate the issue and keep you updated about our progress.
 3. We will acknowledge your contribution when we write about the issue, if you desire so.
 
 Thanks for helping keep our project secure.

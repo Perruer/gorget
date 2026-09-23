@@ -1,3 +1,3 @@
 # API Reference
 
-<swagger-ui src="https://raw.githubusercontent.com/protectai/llm-guard/main/llm_guard_api/openapi.json" />
+<swagger-ui src="https://raw.githubusercontent.com/Perruer/gorget/main/gorget_api/openapi.json" />

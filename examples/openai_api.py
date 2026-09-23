@@ -8,10 +8,10 @@ import os
 
 from openai import OpenAI
 
-from llm_guard import scan_output, scan_prompt
-from llm_guard.input_scanners import Anonymize, PromptInjection, TokenLimit, Toxicity
-from llm_guard.output_scanners import Deanonymize, NoRefusal, Relevance, Sensitive
-from llm_guard.vault import Vault
+from gorget import scan_output, scan_prompt
+from gorget.input_scanners import Anonymize, PromptInjection, TokenLimit, Toxicity
+from gorget.output_scanners import Deanonymize, NoRefusal, Relevance, Sensitive
+from gorget.vault import Vault
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 vault = Vault()

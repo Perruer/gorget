@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.language import Language, MatchType
+from gorget.input_scanners.language import Language, MatchType
 
 
 @pytest.mark.parametrize(

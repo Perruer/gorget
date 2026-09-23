@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.sentiment import Sentiment
+from gorget.output_scanners.sentiment import Sentiment
 
 
 @pytest.mark.parametrize(

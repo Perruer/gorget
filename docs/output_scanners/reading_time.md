@@ -19,7 +19,7 @@ educational materials or time-sensitive reading platforms.
 ## Usage
 
 ```python
-from llm_guard.output_scanners import ReadingTime
+from gorget.output_scanners import ReadingTime
 
 scanner = ReadingTime(max_time=5, truncate=True)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

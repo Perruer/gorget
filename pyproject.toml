@@ -1,13 +1,17 @@
 [project]
-name = "llm-guard"
-description = "LLM-Guard is a comprehensive tool designed to fortify the security of Large Language Models (LLMs). By offering sanitization, detection of harmful language, prevention of data leakage, and resistance against prompt injection attacks, LLM-Guard ensures that your interactions with LLMs remain safe and secure."
+name = "gorget"
+description = "Security scanners for LLM prompts and responses: prompt injection, PII, secrets, toxicity and more. A maintained continuation of LLM Guard."
 authors = [
-  { name = "Protect AI", email = "community@protectai.com"}
+  { name = "Perruer" },
+  { name = "Protect AI (original LLM Guard authors)", email = "community@protectai.com" },
 ]
-keywords = ["llm", "language model", "security", "adversarial attacks", "prompt injection", "prompt leakage", "PII detection", "self-hardening", "firewall"]
+maintainers = [
+  { name = "Perruer" },
+]
+keywords = ["llm", "language model", "security", "prompt injection", "prompt leakage", "PII detection", "anonymization", "guardrails", "firewall", "llm-guard"]
 license = { file="LICENSE" }
 readme = "README.md"
-version = "0.3.16"
+version = "0.4.0.dev0"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -50,7 +54,7 @@ docs-dev = [
   "mkdocs-swagger-ui-tag>=0.7.1",
 ]
 dev = [
-  "llm_guard[docs-dev]",
+  "gorget[docs-dev]",
   "autoflake>=2,<3",
   "pytest>=8.3.5,<9",
   "pytest-cov>=6.1.1,<7",
@@ -60,14 +64,14 @@ dev = [
 ]
 
 [project.urls]
-homepage = "https://github.com/protectai/llm-guard"
-documentation = "https://protectai.github.io/llm-guard/"
-repository = "https://github.com/protectai/llm-guard"
-issues = "https://github.com/protectai/llm-guard/issues"
-changelog = "https://protectai.github.io/llm-guard/changelog/"
+homepage = "https://github.com/Perruer/gorget"
+documentation = "https://perruer.github.io/gorget/"
+repository = "https://github.com/Perruer/gorget"
+issues = "https://github.com/Perruer/gorget/issues"
+changelog = "https://perruer.github.io/gorget/changelog/"
 
 [tool.setuptools]
-packages = {find = {where=["."], include=["llm_guard", "llm_guard.*"]}}
+packages = {find = {where=["."], include=["gorget", "gorget.*", "llm_guard"]}}
 license-files = []
 
 [tool.pytest.ini_options]

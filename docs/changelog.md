@@ -5,19 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 0.3.17
+Gorget continues LLM Guard. Entries up to 0.3.16 describe LLM Guard releases by Protect AI;
+their issue links point to the archived [protectai/llm-guard](https://github.com/protectai/llm-guard) repository.
 
-### Added
--
-
-### Fixed
--
+## [Unreleased] - 0.4.0
 
 ### Changed
--
+- Renamed the project to Gorget: the PyPI package is `gorget`, the module is `gorget`, the API image is `ghcr.io/perruer/gorget-api`.
+- `GorgetValidationError` replaces `LLMGuardValidationError`; the old name remains as an alias.
+
+### Added
+- `llm_guard` compatibility package: existing `llm_guard` imports resolve to the same `gorget` modules.
 
 ### Removed
--
+- Links to the LLM Guard playground on Hugging Face (offline since 2025) and to the Protect AI Slack.
 
 ## [0.3.16] - 2025-05-19
 

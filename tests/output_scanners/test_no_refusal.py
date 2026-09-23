@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.no_refusal import MatchType, NoRefusal, NoRefusalLight
+from gorget.output_scanners.no_refusal import MatchType, NoRefusal, NoRefusalLight
 
 
 @pytest.mark.parametrize(

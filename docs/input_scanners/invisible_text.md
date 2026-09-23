@@ -39,7 +39,7 @@ pyperclip.copy(tagged_output)
 ## Usage
 
 ```python
-from llm_guard.input_scanners import InvisibleText
+from gorget.input_scanners import InvisibleText
 
 scanner = InvisibleText()
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

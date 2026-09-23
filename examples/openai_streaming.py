@@ -1,18 +1,18 @@
 """
-In this example, we demonstrate how to use LLM Guard in the fastest and least disruptive way possible.
+In this example, we demonstrate how to use Gorget in the fastest and least disruptive way possible.
 
 1. We scan the prompt in parallel with the OpenAI completion. If the prompt is invalid, we stop the completion and log the error.
 2. We scan the output in the streaming mode. We stop the completion as soon as the output is invalid.
 """
 
-# pip install llm_guard@git+https://github.com/protectai/llm-guard.git
+# pip install gorget@git+https://github.com/Perruer/gorget.git
 # pip install openai asyncio
 
 import logging
 
-from llm_guard.input_scanners import Anonymize, PromptInjection, TokenLimit, Toxicity
-from llm_guard.output_scanners import Deanonymize, NoRefusal, Relevance, Sensitive
-from llm_guard.vault import Vault
+from gorget.input_scanners import Anonymize, PromptInjection, TokenLimit, Toxicity
+from gorget.output_scanners import Deanonymize, NoRefusal, Relevance, Sensitive
+from gorget.vault import Vault
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ from typing import List
 
 from openai import AsyncOpenAI
 
-from llm_guard import scan_output, scan_prompt
+from gorget import scan_output, scan_prompt
 
 client = AsyncOpenAI(api_key=openai_api_key)
 

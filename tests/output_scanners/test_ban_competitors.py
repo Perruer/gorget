@@ -2,7 +2,7 @@ from typing import List
 
 import pytest
 
-from llm_guard.output_scanners.ban_competitors import BanCompetitors
+from gorget.output_scanners.ban_competitors import BanCompetitors
 
 
 @pytest.mark.parametrize(

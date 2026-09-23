@@ -13,8 +13,8 @@ The scanner operates with a list of regular expressions, patterns. These pattern
 ## Usage
 
 ```python
-from llm_guard.input_scanners import Regex
-from llm_guard.input_scanners.regex import MatchType
+from gorget.input_scanners import Regex
+from gorget.input_scanners.regex import MatchType
 
 # Initialize the Regex scanner
 scanner = Regex(

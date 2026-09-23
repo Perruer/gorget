@@ -23,7 +23,7 @@ indicating a potentially negative sentiment.
 ## Usage
 
 ```python
-from llm_guard.output_scanners import Sentiment
+from gorget.output_scanners import Sentiment
 
 scanner = Sentiment(threshold=0)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

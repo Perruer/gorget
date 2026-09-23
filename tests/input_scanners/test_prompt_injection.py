@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.prompt_injection import MatchType, PromptInjection
+from gorget.input_scanners.prompt_injection import MatchType, PromptInjection
 
 
 @pytest.mark.parametrize(

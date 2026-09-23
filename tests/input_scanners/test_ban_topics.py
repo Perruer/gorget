@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.ban_topics import BanTopics
+from gorget.input_scanners.ban_topics import BanTopics
 
 
 @pytest.mark.parametrize(

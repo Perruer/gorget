@@ -17,7 +17,7 @@ It relies on the following models:
 ## Usage
 
 ```python
-from llm_guard.input_scanners import BanCode
+from gorget.input_scanners import BanCode
 
 scanner = BanCode()
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

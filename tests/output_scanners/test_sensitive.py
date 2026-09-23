@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.sensitive import Sensitive
+from gorget.output_scanners.sensitive import Sensitive
 
 
 @pytest.mark.parametrize(

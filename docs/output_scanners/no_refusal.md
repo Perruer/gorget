@@ -27,8 +27,8 @@ in research papers when evaluating language models.
 ## Usage
 
 ```python
-from llm_guard.output_scanners import NoRefusal
-from llm_guard.output_scanners.no_refusal import MatchType
+from gorget.output_scanners import NoRefusal
+from gorget.output_scanners.no_refusal import MatchType
 
 scanner = NoRefusal(threshold=0.5, match_type=MatchType.FULL)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)
@@ -37,7 +37,7 @@ sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)
 Alternatively, a lighter version can be used:
 
 ```python
-from llm_guard.output_scanners import NoRefusalLight
+from gorget.output_scanners import NoRefusalLight
 
 scanner = NoRefusalLight()
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

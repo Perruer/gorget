@@ -30,7 +30,7 @@ engineered by Yelp, to meticulously detect secrets in strings of text.
 ### Usage
 
 ```python
-from llm_guard.input_scanners import Secrets
+from gorget.input_scanners import Secrets
 
 scanner = Secrets(redact_mode=Secrets.REDACT_PARTIAL)
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

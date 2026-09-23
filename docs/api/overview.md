@@ -1,6 +1,6 @@
 # API
 
-LLM Guard can be deployed as an API. We rely on [FastAPI](https://fastapi.tiangolo.com/) and [Uvicorn](https://www.uvicorn.org/) to serve the API.
+Gorget can be deployed as an API. We rely on [FastAPI](https://fastapi.tiangolo.com/) and [Uvicorn](https://www.uvicorn.org/) to serve the API.
 
 ## Configuration
 

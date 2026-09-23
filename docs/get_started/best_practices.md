@@ -28,4 +28,4 @@
 
 1. **Feedback Loops**: Establish feedback loops with your system's users to understand how the library is performing in real-world scenarios, and to gather suggestions for improvements.
 
-2. **Regular Updates and Testing**: Stay updated with the latest versions of `llm-guard`, and ensure thorough testing in a staging environment before rolling out updates in a production setup.
+2. **Regular Updates and Testing**: Stay updated with the latest versions of `gorget`, and ensure thorough testing in a staging environment before rolling out updates in a production setup.

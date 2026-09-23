@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.toxicity import Toxicity
+from gorget.output_scanners.toxicity import Toxicity
 
 
 @pytest.mark.parametrize(

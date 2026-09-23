@@ -17,7 +17,7 @@ The scanner uses the same roberta-base-go_emotions model as the input scanner to
 ## Usage
 
 ```python
-from llm_guard.output_scanners import EmotionDetection
+from gorget.output_scanners import EmotionDetection
 
 # Use default blocked emotions (negative emotions)
 scanner = EmotionDetection(threshold=0.5)
@@ -87,7 +87,7 @@ python benchmarks/run.py output EmotionDetection
 ## Example
 
 ```python
-from llm_guard.output_scanners import EmotionDetection
+from gorget.output_scanners import EmotionDetection
 
 # Create scanner with default settings (blocks negative emotions)
 scanner = EmotionDetection(threshold=0.5)
@@ -127,7 +127,7 @@ Valid: False, Risk Score: 0.72
 The scanner also supports full emotion analysis mode that returns all detected emotions with their scores:
 
 ```python
-from llm_guard.output_scanners import EmotionDetection
+from gorget.output_scanners import EmotionDetection
 
 # Get full emotion analysis
 scanner = EmotionDetection(threshold=0.5)

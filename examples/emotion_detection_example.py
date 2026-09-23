@@ -5,9 +5,9 @@ This example shows how to use the EmotionDetection scanner to detect and block
 negative emotions in prompts and model outputs.
 """
 
-from llm_guard import scan_output, scan_prompt
-from llm_guard.input_scanners import EmotionDetection
-from llm_guard.output_scanners import EmotionDetection as OutputEmotionDetection
+from gorget import scan_output, scan_prompt
+from gorget.input_scanners import EmotionDetection
+from gorget.output_scanners import EmotionDetection as OutputEmotionDetection
 
 # Configure emotion detection scanners
 input_emotion_scanner = EmotionDetection(

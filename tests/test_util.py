@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.util import (
+from gorget.util import (
     calculate_risk_score,
     chunk_text,
     extract_urls,

@@ -53,7 +53,7 @@ The scanner is currently limited to extracting and detecting code snippets from 
 ## Usage
 
 ```python
-from llm_guard.input_scanners import Code
+from gorget.input_scanners import Code
 
 scanner = Code(languages=["Python"], is_blocked=True)
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

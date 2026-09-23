@@ -28,7 +28,7 @@ For an in-depth understanding, refer to:
 ## Usage
 
 ```python
-from llm_guard.input_scanners import TokenLimit
+from gorget.input_scanners import TokenLimit
 
 scanner = TokenLimit(limit=4096, encoding_name="cl100k_base")
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

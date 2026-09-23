@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.malicious_urls import MaliciousURLs
+from gorget.output_scanners.malicious_urls import MaliciousURLs
 
 
 @pytest.mark.parametrize(

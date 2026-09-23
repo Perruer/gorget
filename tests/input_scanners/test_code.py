@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.code import Code
+from gorget.input_scanners.code import Code
 
 
 @pytest.mark.parametrize(

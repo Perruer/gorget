@@ -1,4 +1,4 @@
-# Installing LLM Guard
+# Installing Gorget
 
 ## Prerequisites
 
@@ -12,10 +12,10 @@ Supported Python versions:
 
 !!! note
 
-    Consider installing the LLM Guard python packages on a virtual environment like `venv` or `conda`.
+    Consider installing the Gorget python packages on a virtual environment like `venv` or `conda`.
 
 ```bash
-pip install llm-guard
+pip install gorget
 ```
 
 If you have issue installing the package due to missing `torch`, you can try the following commands:
@@ -23,20 +23,20 @@ If you have issue installing the package due to missing `torch`, you can try the
 ```bash
 pip install wheel
 pip install torch==2.0.1
-pip install llm-guard --no-build-isolation
+pip install gorget --no-build-isolation
 ```
 
 ## Install from source
 
-To install LLM Guard from source, first clone the repo:
+To install Gorget from source, first clone the repo:
 
 - Using HTTPS
 ```bash
-git clone https://github.com/protectai/llm-guard.git
+git clone https://github.com/Perruer/gorget.git
 ```
 - Using SSH
 ```bash
-git clone git@github.com:protectai/llm-guard.git
+git clone git@github.com:protectai/gorget.git
 ```
 
 We recommend to use a virtual environment like `venv` or `conda` to install the package.

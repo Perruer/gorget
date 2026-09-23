@@ -7,12 +7,12 @@ from typing import Dict, List
 import numpy
 import torch
 
-from llm_guard import input_scanners, output_scanners
-from llm_guard.input_scanners.anonymize_helpers import DEBERTA_AI4PRIVACY_v2_CONF
-from llm_guard.input_scanners.ban_substrings import MatchType as BanSubstringsMatchType
-from llm_guard.input_scanners.base import Scanner as InputScanner
-from llm_guard.output_scanners.base import Scanner as OutputScanner
-from llm_guard.vault import Vault
+from gorget import input_scanners, output_scanners
+from gorget.input_scanners.anonymize_helpers import DEBERTA_AI4PRIVACY_v2_CONF
+from gorget.input_scanners.ban_substrings import MatchType as BanSubstringsMatchType
+from gorget.input_scanners.base import Scanner as InputScanner
+from gorget.output_scanners.base import Scanner as OutputScanner
+from gorget.vault import Vault
 
 torch.set_float32_matmul_precision("high")
 
@@ -216,7 +216,7 @@ def get_output(scanner_name: str, scanner_type: str, latency_list, input_length:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Benchmark scanners in llm-guard library.")
+    parser = argparse.ArgumentParser(description="Benchmark scanners in gorget library.")
     parser.add_argument(
         "type", choices=["input", "output"], help="Type of the scanner to benchmark."
     )

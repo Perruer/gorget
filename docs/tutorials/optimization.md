@@ -7,8 +7,8 @@ ONNX (Open Neural Network Exchange) provides a high-performance inference engine
 To leverage ONNX Runtime, you must first install the appropriate package:
 
 ```sh
-pip install llm-guard[onnxruntime] # for CPU instances
-pip install llm-guard[onnxruntime-gpu] # for GPU instances
+pip install gorget[onnxruntime] # for CPU instances
+pip install gorget[onnxruntime-gpu] # for GPU instances
 ```
 
 Activate ONNX by initializing your scanner with the use_onnx parameter set to True:
@@ -29,7 +29,7 @@ However, that doesn't always lead to better latency but can reduce the model siz
 To minimize CPU and memory usage:
 
 ```python
-from llm_guard.input_scanners.code import Code, DEFAULT_MODEL
+from gorget.input_scanners.code import Code, DEFAULT_MODEL
 
 DEFAULT_MODEL.kwargs["low_cpu_mem_usage"] = True
 scanner = Code(languages=["PHP"], model=DEFAULT_MODEL)
@@ -58,4 +58,4 @@ torch._inductor.config.fx_graph_cache = True
 
 ## Streaming mode
 
-To optimize the output scanning, you can analyze the output in chunks. In [OpenAI](./openai.md) guide, we demonstrate how to use LLM Guard to protect OpenAI client with streaming.
+To optimize the output scanning, you can analyze the output in chunks. In [OpenAI](./openai.md) guide, we demonstrate how to use Gorget to protect OpenAI client with streaming.

@@ -18,15 +18,15 @@ Additionally, the scanner can be configured to replace the banned substrings wit
 
 1. Check that competitors' names are not present in the prompt.
 
-2. Prevent harmful substrings for prompts: [prompt_stop_substrings.json](https://github.com/protectai/llm-guard/blob/main/llm_guard/resources/prompt_stop_substrings.json).
+2. Prevent harmful substrings for prompts: [prompt_stop_substrings.json](https://github.com/Perruer/gorget/blob/main/gorget/resources/prompt_stop_substrings.json).
 
 3. Hide predefined list of URLs you don't want to be mentioned in the prompt.
 
 ## Usage
 
 ```python
-from llm_guard.input_scanners import BanSubstrings
-from llm_guard.input_scanners.ban_substrings import MatchType
+from gorget.input_scanners import BanSubstrings
+from gorget.input_scanners.ban_substrings import MatchType
 
 competitors_names = [
     "Acorns",

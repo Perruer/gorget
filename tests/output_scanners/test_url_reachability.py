@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.url_reachabitlity import URLReachability
+from gorget.output_scanners.url_reachabitlity import URLReachability
 
 
 @pytest.mark.parametrize(

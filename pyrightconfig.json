@@ -3,12 +3,12 @@
     "build"
   ],
   "include": [
-    "llm_guard",
+    "gorget",
     "tests"
   ],
   "ignore": [
     "benchmarks",
     "examples",
-    "llm_guard_api"
+    "gorget_api"
   ]
 }

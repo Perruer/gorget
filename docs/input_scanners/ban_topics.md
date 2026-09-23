@@ -21,7 +21,7 @@ It relies on the capabilities of the following models to perform zero-shot class
 ## Usage
 
 ```python
-from llm_guard.input_scanners import BanTopics
+from gorget.input_scanners import BanTopics
 
 scanner = BanTopics(topics=["violence"], threshold=0.5)
 sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)

@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.output_scanners.factual_consistency import FactualConsistency
+from gorget.output_scanners.factual_consistency import FactualConsistency
 
 
 @pytest.mark.parametrize(

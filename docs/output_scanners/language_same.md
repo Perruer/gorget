@@ -31,7 +31,7 @@ arabic (ar), bulgarian (bg), german (de), modern greek (el), english (en), spani
 ## Usage
 
 ```python
-from llm_guard.output_scanners import LanguageSame
+from gorget.output_scanners import LanguageSame
 
 scanner = LanguageSame()
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)

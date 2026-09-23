@@ -1,6 +1,6 @@
 import pytest
 
-from llm_guard.input_scanners.ban_code import BanCode
+from gorget.input_scanners.ban_code import BanCode
 
 
 @pytest.mark.parametrize(
