@@ -1,0 +1,23 @@
+Gorget
+Copyright 2026 Perruer
+
+Gorget continues LLM Guard (https://github.com/protectai/llm-guard) by Protect AI,
+which was archived on July 8, 2026. LLM Guard and Gorget are licensed under the
+MIT License (see LICENSE).
+
+Bundled data
+------------
+- gorget/data/vader_lexicon.txt: the VADER sentiment lexicon by C.J. Hutto,
+  https://github.com/cjhutto/vaderSentiment, MIT License (see LICENSES/VADER-MIT.txt).
+
+Models
+------
+Gorget does not bundle machine learning models. Scanners download them from the
+Hugging Face Hub on first use, and each model keeps its own license. Some of them
+do not allow commercial use; docs/models.md lists every model with its license.
+
+Trademarks
+----------
+Gorget is an independent project. It is not affiliated with, endorsed by or
+sponsored by Protect AI or Palo Alto Networks. "LLM Guard" is used only to
+describe compatibility.
