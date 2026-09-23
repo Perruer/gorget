@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Gorget continues LLM Guard. Entries up to 0.3.16 describe LLM Guard releases by Protect AI;
 their issue links point to the archived [protectai/llm-guard](https://github.com/protectai/llm-guard) repository.
 
+## [Unreleased]
+
+### Fixed
+- Model downloads wait and retry when Hugging Face answers 429 (rate limit) instead of failing.
+
 ## [0.4.0] - 2026-09-24
 
 ### Added

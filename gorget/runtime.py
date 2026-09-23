@@ -11,6 +11,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import threading
+import time
 import weakref
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -99,6 +100,31 @@ def providers() -> list[str]:
     return ["CPUExecutionProvider"]
 
 
+_RATE_LIMIT_ATTEMPTS = 3
+_RATE_LIMIT_MAX_WAIT = 120
+
+
+def _snapshot_with_retry(huggingface_hub, params: dict) -> Path:
+    """Download a snapshot, waiting out Hugging Face rate limits (HTTP 429) a few times."""
+    errors = lazy_load_dep("huggingface_hub.errors", "huggingface_hub")
+    for attempt in range(1, _RATE_LIMIT_ATTEMPTS + 1):
+        try:
+            return Path(huggingface_hub.snapshot_download(**params))
+        except errors.HfHubHTTPError as exc:  # noqa: PERF203 - retry loop
+            response = getattr(exc, "response", None)
+            if response is None or response.status_code != 429 or attempt == _RATE_LIMIT_ATTEMPTS:
+                raise
+            retry_after = str(response.headers.get("Retry-After", "")).strip()
+            wait = min(int(retry_after) if retry_after.isdigit() else 30, _RATE_LIMIT_MAX_WAIT)
+            LOGGER.warning(
+                "Hugging Face rate limit reached; set HF_TOKEN to raise it. Retrying",
+                repo=params["repo_id"],
+                wait_seconds=wait,
+            )
+            time.sleep(wait)
+    raise AssertionError("unreachable")
+
+
 def _download(model: Model) -> tuple[Path, Path]:
     """Fetch the ONNX graph and its side files; return (graph path, directory with config)."""
     huggingface_hub = lazy_load_dep("huggingface_hub")
@@ -133,7 +159,7 @@ def _download(model: Model) -> tuple[Path, Path]:
         if not (local_dir / graph).exists():
             raise FileNotFoundError(graph)
     except Exception:
-        local_dir = Path(huggingface_hub.snapshot_download(**params))
+        local_dir = _snapshot_with_retry(huggingface_hub, params)
 
     graph_path = local_dir / graph
     if not graph_path.exists():

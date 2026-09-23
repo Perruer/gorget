@@ -132,3 +132,22 @@ def test_sessions_are_shared_between_scanners():
     first = runtime.load(MODEL_EN_BGE_SMALL)
     second = runtime.load(MODEL_EN_BGE_SMALL)
     assert first[1] is second[1]
+
+
+def test_rate_limited_download_is_retried(monkeypatch):
+    httpx = pytest.importorskip("httpx")
+    errors = pytest.importorskip("huggingface_hub.errors")
+    monkeypatch.setattr(runtime.time, "sleep", lambda seconds: None)
+    request = httpx.Request("GET", "https://huggingface.co/api/models/org/model")
+    calls = []
+
+    def snapshot_download(**kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            response = httpx.Response(429, headers={"Retry-After": "5"}, request=request)
+            raise errors.HfHubHTTPError("429 Too Many Requests", response=response)
+        return "cached"
+
+    hub = type("Hub", (), {"snapshot_download": staticmethod(snapshot_download)})
+    assert str(runtime._snapshot_with_retry(hub, {"repo_id": "org/model"})) == "cached"
+    assert len(calls) == 2
