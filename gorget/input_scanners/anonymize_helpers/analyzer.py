@@ -9,8 +9,7 @@ from presidio_analyzer import (
     RecognizerRegistry,
 )
 from presidio_analyzer.context_aware_enhancers import LemmaContextAwareEnhancer
-from presidio_analyzer.nlp_engine import NlpEngine, NlpEngineProvider
-from spacy.cli import download  # type: ignore
+from presidio_analyzer.nlp_engine import NlpArtifacts, NlpEngine, SpacyNlpEngine
 
 from .ner_mapping import NERConfig
 from .predefined_recognizers import _get_predefined_recognizers
@@ -93,18 +92,46 @@ def _add_recognizers(
     return registry
 
 
+class _TokenizerOnlySpacyEngine(SpacyNlpEngine):
+    """
+    spaCy engine that never downloads models.
+
+    Gorget finds names with its transformers recognizer, so spaCy only tokenizes text and
+    gives lemmas for context words. An installed `<lang>_core_web_sm` package is used when
+    present; otherwise a blank pipeline is used and lemmas fall back to lowercase words.
+    """
+
+    def load(self) -> None:
+        self.nlp = {}
+        for model in self.models:
+            name, language = model["model_name"], model["lang_code"]
+            if spacy.util.is_package(name):
+                self.nlp[language] = spacy.load(name, exclude=["ner"])
+            else:
+                self.nlp[language] = spacy.blank(language)
+
+    def _doc_to_nlp_artifact(self, doc, language: str) -> NlpArtifacts:
+        artifacts = super()._doc_to_nlp_artifact(doc, language)
+        # Context keywords are derived from lemmas when artifacts are built, so they are
+        # rebuilt with the lowercase fallback rather than patched afterwards.
+        return NlpArtifacts(
+            entities=artifacts.entities,
+            tokens=artifacts.tokens,
+            tokens_indices=artifacts.tokens_indices,
+            lemmas=[lemma or token.lower_ for lemma, token in zip(artifacts.lemmas, doc)],
+            nlp_engine=self,
+            language=language,
+            scores=artifacts.scores,
+        )
+
+
 def _get_nlp_engine(languages: list[str]) -> NlpEngine:
-    models = []
-
-    for language in languages:
-        if not spacy.util.is_package(f"{language}_core_web_sm"):
-            # Use small spacy model, for faster inference.
-            download(f"{language}_core_web_sm")
-        models.append({"lang_code": language, "model_name": f"{language}_core_web_sm"})
-
-    configuration = {"nlp_engine_name": "spacy", "models": models}
-
-    return NlpEngineProvider(nlp_configuration=configuration).create_engine()
+    models = [
+        {"lang_code": language, "model_name": f"{language}_core_web_sm"} for language in languages
+    ]
+    engine = _TokenizerOnlySpacyEngine(models=models)
+    engine.load()
+    return engine
 
 
 def get_transformers_recognizer(

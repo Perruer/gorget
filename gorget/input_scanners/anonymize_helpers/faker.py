@@ -24,8 +24,9 @@ _entity_faker_map: dict[str, Callable[[], Any]] = {
     "DATE_TIME": fake.date,
     "CRYPTO": cast(
         Callable[[], str],
-        lambda _: "bc1"
-        + "".join(fake.random_choices(string.ascii_lowercase + string.digits, length=26)),
+        lambda _: (
+            "bc1" + "".join(fake.random_choices(string.ascii_lowercase + string.digits, length=26))
+        ),
     ),
     "NRP": cast(Callable[[], str], lambda _: str(fake.random_number(digits=8, fix_len=True))),
     "MEDICAL_LICENSE": cast(Callable[[], str], lambda _: fake.bothify(text="??######").upper()),

@@ -149,15 +149,51 @@ def chunk_text(text: str, chunk_size: int) -> list[str]:
     return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
 
+_ABBREVIATIONS = frozenset(
+    "mr mrs ms dr prof sr jr st vs etc e.g i.e cf al inc ltd co corp no nos fig figs approx "
+    "dept est mt ave blvd jan feb mar apr jun jul aug sep sept oct nov dec a.m p.m u.s u.k".split()
+)
+_SENTENCE_END = re.compile(r"[.!?…]+[\"')\]»”’]*(?=\s)|[。！？]+[”’」』）]*")
+_INITIALISM = re.compile(r"(?:[a-z]\.)+[a-z]")
+
+
+def _is_sentence_boundary(text: str, match: re.Match) -> bool:
+    if match.group(0)[0] in "。！？":
+        return True
+
+    # A lowercase next word still starts a sentence: injected prompts are often sloppy.
+    if match.group(0)[0] == "." and not match.group(0).startswith(".."):
+        before = re.search(r"(\S+)$", text[: match.start()])
+        word = before.group(1).lower().lstrip("\"'([«“‘") if before else ""
+        if word in _ABBREVIATIONS or _INITIALISM.fullmatch(word):
+            return False
+        if len(word) == 1 and word.isalpha():
+            return False
+
+    return True
+
+
 def split_text_by_sentences(text: str) -> list[str]:
-    nltk = lazy_load_dep("nltk")
+    """
+    Split text into sentences with punctuation rules, without downloading NLTK data.
 
-    try:
-        nltk.data.find("tokenizers/punkt_tab")
-    except LookupError:
-        nltk.download("punkt_tab")
+    Blank lines always end a sentence; Chinese and Japanese full stops are recognized.
+    """
+    sentences = []
+    for paragraph in re.split(r"\n\s*\n", text.strip()):
+        start = 0
+        for match in _SENTENCE_END.finditer(paragraph):
+            if not _is_sentence_boundary(paragraph, match):
+                continue
+            sentence = paragraph[start : match.end()].strip()
+            if sentence:
+                sentences.append(sentence)
+            start = match.end()
+        tail = paragraph[start:].strip()
+        if tail:
+            sentences.append(tail)
 
-    return nltk.sent_tokenize(text.strip())
+    return sentences
 
 
 def split_text_to_word_chunks(
@@ -225,7 +261,7 @@ def remove_markdown(text):
     clean_text = text
     for pattern in patterns:
         # Use substitution to preserve the text inside ** and *
-        if "([^\*]+)" in pattern:
+        if r"([^\*]+)" in pattern:
             clean_text = re.sub(pattern, r"\1", clean_text)
         else:
             clean_text = re.sub(pattern, "", clean_text)

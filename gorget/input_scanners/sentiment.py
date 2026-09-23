@@ -1,9 +1,53 @@
+from pathlib import Path
+
+from gorget.exception import GorgetValidationError
 from gorget.util import calculate_risk_score, get_logger, lazy_load_dep
 
 from .base import Scanner
 
 LOGGER = get_logger()
 _lexicon = "vader_lexicon"
+
+# VADER lexicon (MIT, C.J. Hutto) ships with the package, so no NLTK download is needed.
+_BUNDLED_LEXICONS = {
+    "vader_lexicon": Path(__file__).resolve().parent.parent / "data" / "vader_lexicon.txt",
+}
+_NLTK_LEXICON_PATHS = {
+    "vader_lexicon": "sentiment/vader_lexicon.zip/vader_lexicon/vader_lexicon.txt",
+}
+
+
+def _read_lexicon(lexicon: str) -> str:
+    """Lexicon text from the package, a file path or an installed NLTK resource."""
+    if lexicon in _BUNDLED_LEXICONS:
+        return _BUNDLED_LEXICONS[lexicon].read_text(encoding="utf-8")
+
+    if Path(lexicon).is_file():
+        return Path(lexicon).read_text(encoding="utf-8")
+
+    nltk = lazy_load_dep("nltk")
+    resource = _NLTK_LEXICON_PATHS.get(lexicon, lexicon)
+    try:
+        return nltk.data.load(resource, format="text")
+    except LookupError as exc:
+        raise GorgetValidationError(
+            f"Lexicon {lexicon} is not installed. Download it once with "
+            f"`python -m nltk.downloader {lexicon}` or pass a path to a lexicon file."
+        ) from exc
+
+
+def _analyzer(lexicon_text: str):
+    vader = lazy_load_dep("nltk.sentiment.vader", "nltk")
+
+    class _Analyzer(vader.SentimentIntensityAnalyzer):
+        # NLTK only reads lexicons through nltk.data, which refuses paths outside
+        # nltk_data, so the text is handed over directly.
+        def __init__(self, text: str) -> None:
+            self.lexicon_file = text
+            self.lexicon = self.make_lex_dict()
+            self.constants = vader.VaderConstants()
+
+    return _Analyzer(lexicon_text)
 
 
 class Sentiment(Scanner):
@@ -24,11 +68,7 @@ class Sentiment(Scanner):
            None.
         """
 
-        nltk = lazy_load_dep("nltk")
-        nltk.download(lexicon)
-
-        sentiment = lazy_load_dep("nltk.sentiment", "nltk")
-        self._sentiment_analyzer = sentiment.SentimentIntensityAnalyzer()
+        self._sentiment_analyzer = _analyzer(_read_lexicon(lexicon))
         self._threshold = threshold
 
     def scan(self, prompt: str) -> tuple[str, bool, float]:
