@@ -3,6 +3,9 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  # Run from a tag (Actions → Release → Use workflow from: v<version>) to publish
+  # to PyPI after setting it up, without rebuilding the images.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -41,6 +44,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists"
+            exit 0
+          fi
           notes="store/github-release-${GITHUB_REF_NAME}.md"
           [ -f "$notes" ] || notes=/dev/null
           gh release create "$GITHUB_REF_NAME" dist/* --draft \
@@ -64,6 +71,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
 
   images:
+    if: github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
     permissions:
