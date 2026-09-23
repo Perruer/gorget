@@ -6,8 +6,8 @@ from typing import Any, Sequence
 from presidio_anonymizer.core.text_replace_builder import TextReplaceBuilder
 
 from gorget.model import Model
-from gorget.transformers_helpers import get_tokenizer_and_model_for_ner
-from gorget.util import get_logger, lazy_load_dep, split_text_to_word_chunks
+from gorget.transformers_helpers import get_tokenizer_and_model_for_ner, pipeline as build_pipeline
+from gorget.util import get_logger, split_text_to_word_chunks
 
 from .base import Scanner
 
@@ -70,8 +70,7 @@ class BanCompetitors(Scanner):
             use_onnx=use_onnx,
         )
 
-        transformers = lazy_load_dep("transformers")
-        self._ner_pipeline = transformers.pipeline(
+        self._ner_pipeline = build_pipeline(
             "ner", model=tf_model, tokenizer=tf_tokenizer, **model.pipeline_kwargs
         )
 

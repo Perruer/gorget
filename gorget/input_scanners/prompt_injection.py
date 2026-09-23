@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-
-from transformers.tokenization_utils import PreTrainedTokenizer
-from transformers.tokenization_utils_fast import PreTrainedTokenizerFast
+from typing import TYPE_CHECKING
 
 from gorget.model import Model
 from gorget.transformers_helpers import get_tokenizer_and_model_for_classification, pipeline
@@ -18,6 +16,10 @@ from gorget.util import (
 from .base import Scanner
 
 LOGGER = get_logger()
+
+if TYPE_CHECKING:
+    from transformers.tokenization_utils import PreTrainedTokenizer
+    from transformers.tokenization_utils_fast import PreTrainedTokenizerFast
 
 PROMPT_CHARACTERS_LIMIT = 256
 

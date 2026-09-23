@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
-
 import numpy as np
-import torch
 
+from gorget import runtime
 from gorget.model import Model
-from gorget.transformers_helpers import get_tokenizer, is_onnx_supported
+from gorget.transformers_helpers import get_tokenizer_and_model_for_embeddings
 from gorget.util import calculate_risk_score, device, get_logger, lazy_load_dep
 
 from .base import Scanner
@@ -35,10 +33,6 @@ MODEL_EN_BGE_SMALL = Model(
     onnx_revision="5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
     onnx_subfolder="onnx",
 )
-
-
-if TYPE_CHECKING:
-    import optimum.onnxruntime
 
 
 class Relevance(Scanner):
@@ -74,61 +68,36 @@ class Relevance(Scanner):
         self.pooling_method = "cls"
         self.normalize_embeddings = True
 
-        if use_onnx and is_onnx_supported() is False:
-            LOGGER.warning("ONNX is not supported on this machine. Using PyTorch instead of ONNX.")
-            use_onnx = False
-
-        if use_onnx:
-            optimum_onnxruntime = cast(
-                "optimum.onnxruntime",
-                lazy_load_dep(
-                    "optimum.onnxruntime",
-                    (
-                        "optimum[onnxruntime-gpu]"
-                        if device().type == "cuda"
-                        else "optimum[onnxruntime]"
-                    ),
-                ),
+        self._tokenizer, self._model = get_tokenizer_and_model_for_embeddings(
+            model=model,
+            use_onnx=use_onnx,
+        )
+        if isinstance(self._model, runtime.OnnxModel):
+            self._embedder = runtime.FeatureExtractionPipeline(
+                self._model, self._tokenizer, max_length=512
             )
-            assert model.onnx_path is not None
-            self._model = optimum_onnxruntime.ORTModelForFeatureExtraction.from_pretrained(
-                model.onnx_path,
-                export=False,
-                subfolder=model.onnx_subfolder,
-                file_name=model.onnx_filename,
-                revision=model.onnx_revision,
-                provider=(
-                    "CUDAExecutionProvider" if device().type == "cuda" else "CPUExecutionProvider"
-                ),
-                **model.kwargs,
-            )
-            LOGGER.debug("Initialized ONNX model", model=model, device=device())
         else:
-            transformers = lazy_load_dep("transformers")
-            self._model = transformers.AutoModel.from_pretrained(
-                model.path,
-                subfolder=model.subfolder,
-                revision=model.revision,
-                **model.kwargs,
-            ).to(device())
-            LOGGER.debug("Initialized model", model=model, device=device())
+            self._embedder = None
+            self._model = self._model.to(device())
             self._model.eval()
 
-        self._tokenizer = get_tokenizer(model)
-
-    def pooling(
-        self, last_hidden_state: torch.Tensor, attention_mask: torch.Tensor
-    ) -> torch.Tensor | None:
+    def pooling(self, last_hidden_state, attention_mask):
         if self.pooling_method == "cls":
             return last_hidden_state[:, 0]
         elif self.pooling_method == "mean":
+            torch = lazy_load_dep("torch")
             s = torch.sum(last_hidden_state * attention_mask.unsqueeze(-1).float(), dim=1)
             d = attention_mask.sum(dim=1, keepdim=True).float()
             return s / d
         return None
 
-    @torch.no_grad()
     def _encode(self, sentence: str, max_length: int = 512) -> np.ndarray:
+        if self._embedder is not None:
+            return self._embedder.embed(
+                [sentence], pooling=self.pooling_method, normalize=self.normalize_embeddings
+            )[0]
+
+        torch = lazy_load_dep("torch")
         inputs = self._tokenizer(
             [sentence],
             padding=True,

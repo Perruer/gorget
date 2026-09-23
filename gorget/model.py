@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 
-from .util import device
-
 
 @dataclasses.dataclass
 class Model:
@@ -19,6 +17,8 @@ class Model:
         onnx_subfolder (str): Subfolder in the ONNX model path.
         kwargs (Dict, optional): Keyword arguments passed to the model (transformers).
         pipeline_kwargs (Dict, optional): Keyword arguments passed to the pipeline (transformers).
+        tokenizer_kwargs (Dict, optional): Keyword arguments passed to the tokenizer.
+        license (str, optional): SPDX-style license of the model weights, when known.
     """
 
     path: str
@@ -31,11 +31,13 @@ class Model:
     kwargs: dict = dataclasses.field(default_factory=dict)
     pipeline_kwargs: dict = dataclasses.field(default_factory=dict)
     tokenizer_kwargs: dict = dataclasses.field(default_factory=dict)
+    license: str | None = None
 
     def __post_init__(self):
+        # The PyTorch device is added when a pipeline is built, so defining a model
+        # does not import torch.
         default_pipeline_kwargs = {
             "batch_size": 1,
-            "device": device(),
         }
         self.pipeline_kwargs = {**default_pipeline_kwargs, **self.pipeline_kwargs}
 

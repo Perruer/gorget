@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from presidio_analyzer import AnalysisExplanation, EntityRecognizer, RecognizerResult
 from presidio_analyzer.nlp_engine import NlpArtifacts
-from transformers.pipelines.token_classification import TokenClassificationPipeline
 
 from gorget.model import Model
-from gorget.transformers_helpers import get_tokenizer_and_model_for_ner
-from gorget.util import get_logger, lazy_load_dep, split_text_to_word_chunks
+from gorget.transformers_helpers import get_tokenizer_and_model_for_ner, pipeline as build_pipeline
+from gorget.util import get_logger, split_text_to_word_chunks
 
 from .ner_mapping import BERT_BASE_NER_CONF
 
@@ -17,6 +16,7 @@ LOGGER = get_logger()
 
 if TYPE_CHECKING:
     import transformers
+    from transformers.pipelines.token_classification import TokenClassificationPipeline
 
 
 class TransformersRecognizer(EntityRecognizer):
@@ -138,8 +138,7 @@ class TransformersRecognizer(EntityRecognizer):
 
         self.model.pipeline_kwargs["ignore_labels"] = self.ignore_labels
 
-        transformers = cast("transformers", lazy_load_dep("transformers"))
-        self.pipeline = transformers.pipelines.pipeline(
+        self.pipeline = build_pipeline(
             "ner",
             model=tf_model,
             tokenizer=tf_tokenizer,

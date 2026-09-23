@@ -16,6 +16,7 @@ DEFAULT_MODEL = Model(
     revision="58b6c5b44a7a12093f782442969019c7e2982299",
     onnx_path="SamLowe/roberta-base-go_emotions-onnx",
     onnx_revision="90ee0c1c4796d370e68968687b8ba51fc11224f4",
+    onnx_subfolder="onnx",
     pipeline_kwargs={
         "padding": "max_length",
         "top_k": None,

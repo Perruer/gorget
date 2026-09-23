@@ -1,44 +1,34 @@
-# Use the Python 3.12 slim image
-FROM python:3.12-slim
+# Gorget API on CPU. Models run on ONNX Runtime, so the image carries no PyTorch.
+# Build from the repository root: docker build -f gorget_api/Dockerfile .
+FROM python:3.13-slim
 
 LABEL org.opencontainers.image.source=https://github.com/Perruer/gorget
 LABEL org.opencontainers.image.description="Gorget API"
 LABEL org.opencontainers.image.licenses=MIT
 
-# Install system packages needed for building
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
-    PATH=/home/user/.local/bin:$PATH
+    PATH=/home/user/.local/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
-# ensures that the python output is sent straight to terminal (e.g. your container log)
-# without being first buffered and that you can see the output of your application (e.g. django logs)
-# in real time. Equivalent to python -u: https://docs.python.org/3/using/cmdline.html#cmdoption-u
-ENV PYTHONUNBUFFERED 1
-
-# https://docs.python.org/3/using/cmdline.html#envvar-PYTHONDONTWRITEBYTECODE
-# Prevents Python from writing .pyc files to disk
-ENV PYTHONDONTWRITEBYTECODE 1
-
-# Set up a working directory
 WORKDIR $HOME/app
 
-# Copy pyproject.toml and other necessary files for installation
-COPY --chown=user:user pyproject.toml ./
-COPY --chown=user:user app ./app
+# The library comes from this repository, so the image matches the commit it is built from.
+COPY --chown=user:user pyproject.toml README.md LICENSE ./gorget-src/
+COPY --chown=user:user gorget ./gorget-src/gorget
+COPY --chown=user:user llm_guard ./gorget-src/llm_guard
+COPY --chown=user:user gorget_api/pyproject.toml gorget_api/README.md ./
+COPY --chown=user:user gorget_api/app ./app
 
-# Install the project's dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir ".[cpu]"
+    pip install --no-cache-dir ./gorget-src && \
+    pip install --no-cache-dir . && \
+    rm -rf ./gorget-src
 
-RUN python -m spacy download en_core_web_sm
-
-COPY --chown=user:user ./config/scanners.yml ./config/scanners.yml
-COPY --chown=user:user entrypoint.sh ./entrypoint.sh
+COPY --chown=user:user gorget_api/config/scanners.yml ./config/scanners.yml
+COPY --chown=user:user gorget_api/entrypoint.sh ./entrypoint.sh
 
 RUN chmod +x ./entrypoint.sh
 

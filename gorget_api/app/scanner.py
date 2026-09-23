@@ -1,9 +1,10 @@
 import asyncio
+import importlib.util
+import os
 import time
 from typing import Dict, List, Optional
 
 import structlog
-import torch
 from opentelemetry import metrics
 
 from gorget import input_scanners, output_scanners
@@ -28,7 +29,12 @@ from gorget.vault import Vault
 from .config import ScannerConfig
 from .util import get_resource_utilization
 
-torch.set_num_threads(1)
+# One inference thread per worker; scale with APP_WORKERS instead.
+os.environ.setdefault("GORGET_ONNX_THREADS", "1")
+if importlib.util.find_spec("torch") is not None:
+    import torch
+
+    torch.set_num_threads(1)
 
 LOGGER = structlog.getLogger(__name__)
 
@@ -166,9 +172,7 @@ def _get_input_scanner(
         scanner_config["model"] = TOXICITY_MODEL
 
     if scanner_name == "EmotionDetection":
-        from gorget.input_scanners.emotion_detection import (
-            DEFAULT_MODEL as EMOTION_DETECTION_MODEL,
-        )
+        from gorget.input_scanners.emotion_detection import DEFAULT_MODEL as EMOTION_DETECTION_MODEL
 
         _configure_model(EMOTION_DETECTION_MODEL, scanner_config)
         scanner_config["model"] = EMOTION_DETECTION_MODEL
@@ -259,9 +263,7 @@ def _get_output_scanner(
         scanner_config["model"] = TOXICITY_MODEL
 
     if scanner_name == "EmotionDetection":
-        from gorget.input_scanners.emotion_detection import (
-            DEFAULT_MODEL as EMOTION_DETECTION_MODEL,
-        )
+        from gorget.input_scanners.emotion_detection import DEFAULT_MODEL as EMOTION_DETECTION_MODEL
 
         _configure_model(EMOTION_DETECTION_MODEL, scanner_config)
         scanner_config["model"] = EMOTION_DETECTION_MODEL
