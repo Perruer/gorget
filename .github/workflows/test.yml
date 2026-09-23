@@ -2,67 +2,110 @@ name: Test
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths-ignore:
       - "docs/**"
       - "*.md"
-
   pull_request:
-    types: [opened, synchronize, reopened, edited]
     paths-ignore:
       - "docs/**"
       - "*.md"
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
+env:
+  # Optional: a read-only Hugging Face token avoids anonymous rate limits.
+  HF_TOKEN: ${{ secrets.HF_TOKEN }}
+  HF_HUB_DISABLE_PROGRESS_BARS: "1"
+  TOKENIZERS_PARALLELISM: "false"
+
 jobs:
-  test:
-    strategy:
-      fail-fast: true
-      matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-
+  lint:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install "ruff>=0.16"
+      - run: ruff check gorget llm_guard gorget_api tests
+      - run: ruff format --check gorget llm_guard gorget_api tests
 
-      - name: Aggressive disk cleanup
-        run: |
-          sudo rm -rf /usr/local/lib/android
-          docker system prune -af
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo rm -rf /tmp/*
-          sudo rm -rf /var/tmp/*
-          rm -rf ~/.cache/huggingface
-          rm -rf ~/.cache/pip
-          df -h
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+  onnx:
+    name: tests (ONNX Runtime, no PyTorch, Python ${{ matrix.python-version }})
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.14"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-          cache: ''   # disables pip cache
-
-      - name: Install deps
+      - name: Install without PyTorch
         run: |
           python -m pip install --upgrade pip
-          python -m pip install ".[dev]"
+          python -m pip install . "pytest>=8"
+          python -c "import importlib.util, sys; sys.exit(importlib.util.find_spec('torch') is not None)"
+      - name: Test
+        run: python -m pytest -p no:cacheprovider -q -rfE
 
-      - name: Free up space & Hugging Face cache
+  torch:
+    name: tests (PyTorch, Python 3.12)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Free disk space
         run: |
-          rm -rf ~/.cache/huggingface
-          df -h
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          df -h /
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install with CPU PyTorch
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[torch]" "pytest>=8" --extra-index-url https://download.pytorch.org/whl/cpu
+      - name: Test (includes ONNX vs PyTorch comparisons)
+        run: python -m pytest -p no:cacheprovider -q -rfE
 
-      - name: Test with pytest
-        env:
-          HF_HUB_DISABLE_CACHE: 1   # prevents cache from filling up runner disk
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Build
         run: |
-          python -m pytest --exitfirst --verbose --failed-first --cov=. --color=yes --code-highlight=yes
+          python -m pip install build twine
+          python -m build
+          python -m twine check dist/*
+      - name: Wheel works in a clean environment
+        run: |
+          python -m venv /tmp/wheel-check
+          /tmp/wheel-check/bin/pip install dist/*.whl
+          /tmp/wheel-check/bin/python -c "
+          from gorget.input_scanners import Secrets
+          from llm_guard.input_scanners import Secrets as Legacy
+          assert Secrets is Legacy
+          print(Secrets().scan('token ghp_1234567890abcdefghijklmnopqrstuvwxyzAB'))
+          "
+      - name: Build the API image
+        run: docker build -f gorget_api/Dockerfile -t gorget-api:ci .
+      - name: API answers health checks
+        run: |
+          docker run -d -p 8000:8000 --name api gorget-api:ci
+          for i in $(seq 1 30); do
+            curl -sf localhost:8000/healthz && exit 0
+            sleep 5
+          done
+          docker logs api
+          exit 1
