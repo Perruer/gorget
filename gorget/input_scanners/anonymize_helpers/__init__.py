@@ -13,5 +13,7 @@ __all__ = [
     "BERT_ZH_NER_CONF",
     "BERT_LARGE_NER_CONF",
     "DEBERTA_LAKSHYAKH93_CONF",
+    "BERT_RU_NER_CONF",
+    "BERT_SMALL_GRAVITEE_PII_CONF",
     "get_regex_patterns",
 ]

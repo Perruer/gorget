@@ -13,8 +13,12 @@ def _get_predefined_recognizers(language: str) -> list[Callable[..., EntityRecog
             EmailRecognizer,
             IpRecognizer,
         ]
-    else:
-        return []
+    if language == "ru":
+        from .ru import RU_RECOGNIZERS
+
+        return list(RU_RECOGNIZERS)
+
+    return []
 
 
 __all__ = [

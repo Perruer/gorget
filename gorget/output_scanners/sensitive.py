@@ -6,6 +6,7 @@ from gorget.exception import GorgetValidationError
 from gorget.input_scanners.anonymize import (
     ALL_SUPPORTED_LANGUAGES,
     DEFAULT_ENTITY_TYPES,
+    LANGUAGE_DEFAULT_RECOGNIZER_CONF,
     Anonymize,
 )
 from gorget.input_scanners.anonymize_helpers import (
@@ -56,6 +57,7 @@ class Sensitive(Scanner):
            recognizer_conf (Optional[Dict]): Configuration to recognize PII data. Default is Ai4Privacy DeBERTa.
            threshold (float): Acceptance threshold. Default is 0.
            use_onnx (bool): Use ONNX model for inference. Default is False.
+           language (str): Language of the output. Default is "en".
         """
         if language not in ALL_SUPPORTED_LANGUAGES:
             raise GorgetValidationError(
@@ -73,13 +75,17 @@ class Sensitive(Scanner):
         self._entity_types = entity_types
         self._redact = redact
         self._threshold = threshold
+        self._language = language
 
         if not recognizer_conf:
-            recognizer_conf = DEBERTA_AI4PRIVACY_v2_CONF
+            recognizer_conf = LANGUAGE_DEFAULT_RECOGNIZER_CONF.get(
+                language, DEBERTA_AI4PRIVACY_v2_CONF
+            )
 
         transformers_recognizer = get_transformers_recognizer(
             recognizer_conf=recognizer_conf,
             use_onnx=use_onnx,
+            supported_language=language,
         )
         self._analyzer = get_analyzer(
             transformers_recognizer,
@@ -95,7 +101,7 @@ class Sensitive(Scanner):
 
         analyzer_results = self._analyzer.analyze(
             text=Anonymize.remove_single_quotes(output),
-            language="en",
+            language=self._language,
             entities=self._entity_types,
             score_threshold=self._threshold,
         )

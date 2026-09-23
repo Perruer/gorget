@@ -123,6 +123,7 @@ DISTILBERT_AI4PRIVACY_v2_CONF: NERConfig = {
     ],
     "DEFAULT_MODEL": Model(
         path="Isotonic/distilbert_finetuned_ai4privacy_v2",
+        license="cc-by-nc-4.0",
         revision="51d7b98bad735ff1af5bda6a6a9a7fbebd102ac9",
         onnx_path="Isotonic/distilbert_finetuned_ai4privacy_v2",
         onnx_revision="51d7b98bad735ff1af5bda6a6a9a7fbebd102ac9",
@@ -186,6 +187,7 @@ DEBERTA_AI4PRIVACY_v2_CONF: NERConfig = {
     ],
     "DEFAULT_MODEL": Model(
         path="Isotonic/deberta-v3-base_finetuned_ai4privacy_v2",
+        license="cc-by-nc-4.0",
         revision="9ea992753ab2686be4a8f64605ccc7be197ad794",
         onnx_path="Isotonic/deberta-v3-base_finetuned_ai4privacy_v2",
         onnx_revision="9ea992753ab2686be4a8f64605ccc7be197ad794",
@@ -249,6 +251,7 @@ MDEBERTA_AI4PRIVACY_v2_CONF: NERConfig = {
     ],
     "DEFAULT_MODEL": Model(
         path="Isotonic/mdeberta-v3-base_finetuned_ai4privacy_v2",
+        license="cc-by-nc-4.0",
         revision="316240516ad48a82ae1b13567670093901e41b5e",
         onnx_path="Isotonic/mdeberta-v3-base_finetuned_ai4privacy_v2",
         onnx_revision="316240516ad48a82ae1b13567670093901e41b5e",
@@ -354,6 +357,91 @@ DEBERTA_LAKSHYAKH93_CONF: NERConfig = {
         "LITECOINADDRESS": "CRYPTO",
         "IP": "IP_ADDRESS",
         "IBAN": "IBAN_CODE",
+    },
+    "CHUNK_OVERLAP_SIZE": 40,
+    "CHUNK_SIZE": 600,
+    "ID_SCORE_MULTIPLIER": 0.4,
+    "ID_ENTITY_NAME": "ID",
+}
+
+# Russian names and addresses. MIT licensed; the ONNX export comes from onnx-community.
+BERT_RU_NER_CONF: NERConfig = {
+    "PRESIDIO_SUPPORTED_ENTITIES": [
+        "LOCATION",
+        "PERSON",
+    ],
+    "DEFAULT_MODEL": Model(
+        path="Gherman/bert-base-NER-Russian",
+        revision="fc6b2c5a2c5d7c82da7416f7fd9c055159bbb984",
+        onnx_path="onnx-community/bert-base-NER-Russian-ONNX",
+        onnx_revision="2bd219a78a06657c59fa8c2540ccbad703972e7c",
+        onnx_subfolder="onnx",
+        pipeline_kwargs={
+            "aggregation_strategy": "simple",
+        },
+        tokenizer_kwargs={"model_input_names": ["input_ids", "attention_mask"]},
+    ),
+    "LABELS_TO_IGNORE": ["O"],
+    "DEFAULT_EXPLANATION": "Identified as {} by the Gherman/bert-base-NER-Russian NER model",
+    "MODEL_TO_PRESIDIO_MAPPING": {
+        "FIRST_NAME": "PERSON",
+        "LAST_NAME": "PERSON",
+        "MIDDLE_NAME": "PERSON",
+        "CITY": "LOCATION",
+        "COUNTRY": "LOCATION",
+        "DISTRICT": "LOCATION",
+        "REGION": "LOCATION",
+        "STREET": "LOCATION",
+        "HOUSE": "LOCATION",
+    },
+    "CHUNK_OVERLAP_SIZE": 40,
+    "CHUNK_SIZE": 600,
+    "ID_SCORE_MULTIPLIER": 0.4,
+    "ID_ENTITY_NAME": "ID",
+}
+
+# Apache-2.0 PII model with Presidio entity names, small enough for CPU. Unlike the
+# Ai4Privacy models (CC-BY-NC-4.0) it can be used in commercial products.
+BERT_SMALL_GRAVITEE_PII_CONF: NERConfig = {
+    "PRESIDIO_SUPPORTED_ENTITIES": [
+        "LOCATION",
+        "PERSON",
+        "ORGANIZATION",
+        "EMAIL_ADDRESS",
+        "PHONE_NUMBER",
+        "CREDIT_CARD",
+        "DATE_TIME",
+        "IBAN_CODE",
+        "IP_ADDRESS",
+        "URL",
+        "US_SSN",
+        "US_PASSPORT",
+        "US_DRIVER_LICENSE",
+        "US_BANK_NUMBER",
+    ],
+    "DEFAULT_MODEL": Model(
+        path="gravitee-io/bert-small-pii-detection",
+        revision="f8c27a85c51c0168f07b9dcf00265bf0a4097939",
+        onnx_path="gravitee-io/bert-small-pii-detection",
+        onnx_revision="f8c27a85c51c0168f07b9dcf00265bf0a4097939",
+        pipeline_kwargs={
+            "aggregation_strategy": "simple",
+        },
+        tokenizer_kwargs={"model_input_names": ["input_ids", "attention_mask"]},
+    ),
+    "LABELS_TO_IGNORE": ["O"],
+    "DEFAULT_EXPLANATION": "Identified as {} by the gravitee-io/bert-small-pii-detection NER model",
+    "MODEL_TO_PRESIDIO_MAPPING": {
+        **{
+            label: label
+            for label in (
+                "AGE COORDINATE CREDIT_CARD DATE_TIME EMAIL_ADDRESS FINANCIAL IBAN_CODE IMEI "
+                "IP_ADDRESS LOCATION MAC_ADDRESS NRP ORGANIZATION PASSWORD PERSON PHONE_NUMBER "
+                "URL US_BANK_NUMBER US_DRIVER_LICENSE US_ITIN US_LICENSE_PLATE US_PASSPORT US_SSN"
+            ).split()
+        },
+        "HONORIFIC": "O",
+        "TITLE": "O",
     },
     "CHUNK_OVERLAP_SIZE": 40,
     "CHUNK_SIZE": 600,

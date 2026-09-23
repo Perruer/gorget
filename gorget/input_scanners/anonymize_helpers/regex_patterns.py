@@ -40,7 +40,7 @@ DEFAULT_REGEX_PATTERNS: list[DefaultRegexPatterns | RegexPatternsReuse] = [
         "examples": ["4111111111111111", "378282246310005", "30569309025904"],
         "context": [],
         "score": 0.75,
-        "languages": ["en", "zh"],
+        "languages": ["en", "zh", "ru"],
     },
     {
         "expressions": [r"[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}"],
@@ -48,7 +48,7 @@ DEFAULT_REGEX_PATTERNS: list[DefaultRegexPatterns | RegexPatternsReuse] = [
         "examples": ["550e8400-e29b-41d4-a716-446655440000"],
         "context": [],
         "score": 0.75,
-        "languages": ["en", "zh"],
+        "languages": ["en", "zh", "ru"],
     },
     {
         "expressions": [r"\b[A-Za-z0-9._%+-]+(\[AT\]|@)[A-Za-z0-9.-]+(\[DOT\]|\.)[A-Za-z]{2,}\b"],
@@ -61,7 +61,7 @@ DEFAULT_REGEX_PATTERNS: list[DefaultRegexPatterns | RegexPatternsReuse] = [
         ],
         "context": [],
         "score": 0.75,
-        "languages": ["en", "zh"],
+        "languages": ["en", "zh", "ru"],
     },
     {
         "expressions": [r"\b\d{3}-\d{2}-\d{4}\b"],

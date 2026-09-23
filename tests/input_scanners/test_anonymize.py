@@ -3,11 +3,7 @@ import re
 import pytest
 
 from gorget.exception import GorgetValidationError
-from gorget.input_scanners.anonymize import (
-    ALL_SUPPORTED_LANGUAGES,
-    DEFAULT_ENTITY_TYPES,
-    Anonymize,
-)
+from gorget.input_scanners.anonymize import ALL_SUPPORTED_LANGUAGES, DEFAULT_ENTITY_TYPES, Anonymize
 from gorget.input_scanners.anonymize_helpers import (
     BERT_BASE_NER_CONF,
     BERT_LARGE_NER_CONF,

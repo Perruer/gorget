@@ -13,6 +13,7 @@ from ..exception import GorgetValidationError
 from ..util import calculate_risk_score, get_logger
 from ..vault import Vault
 from .anonymize_helpers import (
+    BERT_RU_NER_CONF,
     DEBERTA_AI4PRIVACY_v2_CONF,
     get_analyzer,
     get_fake_value,
@@ -38,9 +39,18 @@ DEFAULT_ENTITY_TYPES: Final[list[str]] = [
     "UUID",
     "EMAIL_ADDRESS_RE",
     "US_SSN_RE",
+    "RU_INN",
+    "RU_SNILS",
+    "RU_OGRN",
+    "RU_PASSPORT",
 ]
 
-ALL_SUPPORTED_LANGUAGES: Final[list[str]] = ["en", "zh"]
+ALL_SUPPORTED_LANGUAGES: Final[list[str]] = ["en", "zh", "ru"]
+
+# Languages whose text the default English model cannot read get their own NER model.
+LANGUAGE_DEFAULT_RECOGNIZER_CONF: Final[dict[str, NERConfig]] = {
+    "ru": BERT_RU_NER_CONF,
+}
 
 
 class Anonymize(Scanner):
@@ -111,7 +121,9 @@ class Anonymize(Scanner):
         self._language = language
 
         if not recognizer_conf:
-            recognizer_conf = DEBERTA_AI4PRIVACY_v2_CONF
+            recognizer_conf = LANGUAGE_DEFAULT_RECOGNIZER_CONF.get(
+                language, DEBERTA_AI4PRIVACY_v2_CONF
+            )
 
         transformers_recognizer = get_transformers_recognizer(
             recognizer_conf=recognizer_conf,
