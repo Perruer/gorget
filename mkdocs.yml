@@ -12,8 +12,8 @@ copyright: |
 theme:
   name: material
   custom_dir: docs/overrides
-  favicon: assets/favicon.ico
-  logo: assets/logo.png
+  favicon: assets/logo.svg
+  logo: assets/logo.svg
   icon:
     repo: fontawesome/brands/github
     admonition:
@@ -91,6 +91,7 @@ nav:
     - Quickstart: get_started/quickstart.md
     - Attacks: get_started/attacks.md
     - Best Practices: get_started/best_practices.md
+    - Models and licenses: models.md
   - Tutorials:
     - Optimization: tutorials/optimization.md
     - Local Models: tutorials/notebooks/local_models.ipynb

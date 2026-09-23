@@ -6,8 +6,8 @@
 
 2. Install dependencies (preferably in a virtual environment)
 ```bash
-python -m pip install ".[cpu]"
-python -m pip install ".[gpu]" # If you have a GPU
+python -m pip install .
+python -m pip install ".[gpu]" # PyTorch, if you have a GPU
 ```
 
 3. Alternatively, you can use Makefile:
@@ -41,19 +41,18 @@ It will preload models in the shared memory among workers, which can be useful f
 
 ## From Docker
 
-Either build the Docker image or pull our official image from [Docker Hub](https://hub.docker.com/r/ghcr.io/perruer/gorget-api).
-
-In order to build the Docker image, run the following command:
+Pull the image from GitHub Container Registry:
 
 ```bash
-make build-docker-multi
-make build-docker-cuda-multi # If you have a GPU
+docker pull ghcr.io/perruer/gorget-api:latest       # CPU, ONNX Runtime, no PyTorch
+docker pull ghcr.io/perruer/gorget-api:latest-cuda  # NVIDIA GPU, PyTorch
 ```
 
-Or pull the official image:
+Or build it from the repository root:
 
 ```bash
-docker pull ghcr.io/perruer/gorget-api:latest
+docker build -f gorget_api/Dockerfile -t gorget-api .
+docker build -f gorget_api/Dockerfile-cuda -t gorget-api:cuda .
 ```
 
 Now, you can run the Docker container:
@@ -70,9 +69,12 @@ If you want to use a custom configuration, you can mount a volume to `/home/user
 docker run -d -p 8000:8000 -e APP_WORKERS=1 -e AUTH_TOKEN='my-token' -e LOG_LEVEL='DEBUG' -v ./entrypoint.sh:/home/user/app/entrypoint.sh -v ./config/scanners.yml:/home/user/app/config/scanners.yml ghcr.io/perruer/gorget-api:latest
 ```
 
-!!! warning
+!!! tip
 
-    We recommend at least 16GB of RAM allocated to Docker. We are working on optimizing the memory usage when the container starts.
+    Memory grows with the number of model-based scanners. The CPU image carries no PyTorch; scanners
+    that share a model (for example `Language` and `LanguageSame`) share one ONNX session. To keep
+    models out of the network path at startup, mount a filled Hugging Face cache and set
+    `HF_HUB_OFFLINE=1`.
 
 ## Troubleshooting
 

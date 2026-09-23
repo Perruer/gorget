@@ -3,7 +3,7 @@
 .PHONY: install-dev
 install-dev: ## Install development dependencies.
 	@echo "Installing development dependencies..."
-	@python -m pip install ".[dev, onnxruntime]" -U
+	@python -m pip install ".[dev,torch]" -U
 	@pre-commit install
 
 .PHONY: lint

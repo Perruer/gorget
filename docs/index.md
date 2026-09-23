@@ -6,7 +6,7 @@ Gorget is a comprehensive tool designed to fortify the security of Large Languag
 
 ## What is Gorget?
 
-![Gorget](./assets/flow.png)
+![How Gorget works](./assets/flow.svg)
 
 By offering sanitization, detection of harmful language, prevention of data leakage, and resistance against prompt
 injection attacks, Gorget ensures that your interactions with LLMs remain safe and secure.
@@ -25,9 +25,9 @@ pip install gorget
 
 - Gorget is designed for easy integration and deployment in production environments. While it's ready to use
   out-of-the-box, please be informed that we're constantly improving and updating the repository.
-- Base functionality requires a limited number of libraries. As you explore more advanced features, necessary libraries
-  will be automatically installed.
-- Ensure you're using Python version 3.9 or higher. Confirm with: `python --version`.
+- `pip install gorget` runs every scanner on ONNX Runtime without PyTorch; add the `torch` extra for GPUs.
+  Nothing is installed or downloaded behind your back except models from the Hugging Face Hub on first use.
+- Python 3.10 to 3.14 is supported. Confirm with: `python --version`.
 - Library installation issues? Consider upgrading pip: `python -m pip install --upgrade pip`.
 
 **Examples**:

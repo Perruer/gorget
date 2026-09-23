@@ -65,12 +65,40 @@ Some model providers may train their models on your requests, which can be a pri
     - **Top Pick: [dslim/bert-base-NER](https://huggingface.co/dslim/bert-base-NER)**
     - Alternative with more parameters: [dslim/bert-large-NER](https://huggingface.co/dslim/bert-large-NER).
     - Chinese recognizer: [gyr66/bert-base-chinese-finetuned-ner](https://huggingface.co/gyr66/bert-base-chinese-finetuned-ner).
-    - Good models from AI4Privacy: [Isotonic/distilbert_finetuned_ai4privacy_v2](https://huggingface.co/Isotonic/distilbert_finetuned_ai4privacy_v2) and [Isotonic/deberta-v3-base_finetuned_ai4privacy_v2](https://huggingface.co/Isotonic/deberta-v3-base_finetuned_ai4privacy_v2).
-- **Support of multiple languages**: The scanner can detect PII in English and Chinese.
+    - Russian recognizer: [Gherman/bert-base-NER-Russian](https://huggingface.co/Gherman/bert-base-NER-Russian), used by default for `language="ru"`.
+    - Commercial-friendly PII model (Apache-2.0): [gravitee-io/bert-small-pii-detection](https://huggingface.co/gravitee-io/bert-small-pii-detection) as `BERT_SMALL_GRAVITEE_PII_CONF`.
+    - Models from AI4Privacy: [Isotonic/distilbert_finetuned_ai4privacy_v2](https://huggingface.co/Isotonic/distilbert_finetuned_ai4privacy_v2) and [Isotonic/deberta-v3-base_finetuned_ai4privacy_v2](https://huggingface.co/Isotonic/deberta-v3-base_finetuned_ai4privacy_v2).
+- **Support of multiple languages**: English, Chinese and Russian.
 
-!!! info
+!!! warning "Model licenses"
 
-    Current entity detection functionality is English-specific.
+    The default English model, `Isotonic/deberta-v3-base_finetuned_ai4privacy_v2`, is licensed
+    CC-BY-NC-4.0, which does not allow commercial use. LLM Guard used it without saying so; Gorget
+    keeps it as the default for compatibility and logs a warning once. For a commercial product pass
+    `recognizer_conf=BERT_SMALL_GRAVITEE_PII_CONF` (Apache-2.0) or `BERT_BASE_NER_CONF` (MIT).
+
+### Russian personal data
+
+With `language="ru"` the scanner finds Russian names and addresses with a Russian NER model and
+recognizes documents by their format and control sums:
+
+| Entity | What | Check |
+|--------|------|-------|
+| `RU_INN` | Taxpayer number, 10 or 12 digits | control digits |
+| `RU_SNILS` | Insurance number, `123-456-789 01` | control sum |
+| `RU_OGRN` | Registration number, 13 or 15 digits | control digit |
+| `RU_PASSPORT` | Passport series and number | region and year in the series; needs context such as «паспорт» |
+| `PHONE_NUMBER` | Russian and CIS phone numbers | `phonenumbers` |
+
+E-mail, IP addresses, bank cards, IBAN and crypto wallets are recognized as in English text.
+
+```python
+scanner = Anonymize(vault, language="ru")
+sanitized_prompt, is_valid, risk_score = scanner.scan(
+    "Меня зовут Иван Петров, ИНН 500100732259, СНИЛС 112-233-445 95."
+)
+# Меня зовут [REDACTED_PERSON_1], ИНН [REDACTED_RU_INN_1], СНИЛС [REDACTED_RU_SNILS_1].
+```
 
 ## Get started
 

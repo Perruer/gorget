@@ -25,10 +25,8 @@ python -m venv venv
 source venv/bin/activate
 
 # install the repo
-python -m pip install ".[dev]"
+python -m pip install -e ".[dev,torch]"
 
-# download SpaCy model
-python -m spacy download en_core_web_trf
 ```
 
 ## Testing

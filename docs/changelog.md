@@ -10,14 +10,40 @@ their issue links point to the archived [protectai/llm-guard](https://github.com
 
 ## [Unreleased] - 0.4.0
 
+### Added
+- ONNX Runtime backend without PyTorch or `optimum`: `pip install gorget` runs every scanner on CPU,
+  PyTorch moved to the `torch` extra. Results match the PyTorch pipelines (tested).
+  `GORGET_BACKEND`, `GORGET_ONNX_THREADS` and `GORGET_ONNX_PROVIDERS` tune it.
+- Russian personal data for `Anonymize` and `Sensitive` with `language="ru"`: Russian NER model,
+  INN, SNILS and OGRN with control sums, passport series and numbers, Russian phone numbers.
+- `BERT_SMALL_GRAVITEE_PII_CONF`: Apache-2.0 PII model that can be used commercially.
+- `llm_guard` compatibility package: existing `llm_guard` imports resolve to the same `gorget` modules.
+- Python 3.13 and 3.14 support.
+
+### Fixed
+- No downloads at runtime: spaCy models are no longer installed with pip while scanning (it failed in
+  uv and poetry environments), NLTK sentence splitting and the VADER lexicon no longer need NLTK data
+  (NLTK 3.10 refuses to download through proxies).
+- Vulnerable dependency pins: `transformers==4.51.3` (7 advisories) and `presidio==2.2.358`
+  (holds `cryptography` below 44.1, CVE-2026-26007) are replaced with ranges.
+- `MaliciousURLs` works again: its PyTorch model was deleted from Hugging Face, the scanner now falls
+  back to the ONNX export when a PyTorch repository is gone.
+- `EmotionDetection` with `use_onnx=True` pointed at a missing file.
+- `FactualConsistency` and `Relevance` imported PyTorch at module import time.
+- `Sensitive` ignored its `language` argument.
+- Cached models load without network access, so `HF_HUB_OFFLINE=1` works with ONNX models.
+- Gated models raise a clear error that explains how to get access.
+
 ### Changed
 - Renamed the project to Gorget: the PyPI package is `gorget`, the module is `gorget`, the API image is `ghcr.io/perruer/gorget-api`.
 - `GorgetValidationError` replaces `LLMGuardValidationError`; the old name remains as an alias.
-
-### Added
-- `llm_guard` compatibility package: existing `llm_guard` imports resolve to the same `gorget` modules.
+- A warning is logged once when a model with a non-commercial license is loaded (the default
+  `Anonymize` model is CC-BY-NC-4.0).
+- Sentences are split with punctuation rules; blank lines and Chinese full stops end a sentence.
+- The API image runs on ONNX Runtime without PyTorch; the CUDA image uses PyTorch.
 
 ### Removed
+- `onnxruntime-gpu` extra: install `gorget[torch]` for GPUs, or replace `onnxruntime` with `onnxruntime-gpu`.
 - Links to the LLM Guard playground on Hugging Face (offline since 2025) and to the Protect AI Slack.
 
 ## [0.3.16] - 2025-05-19

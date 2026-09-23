@@ -2,22 +2,23 @@
 
 ## ONNX Runtime
 
-ONNX (Open Neural Network Exchange) provides a high-performance inference engine for machine learning models, allowing for faster and more efficient model execution. If an ONNX version of a model is available, it can serve as a substantial optimization for the scanner.
-
-To leverage ONNX Runtime, you must first install the appropriate package:
-
-```sh
-pip install gorget[onnxruntime] # for CPU instances
-pip install gorget[onnxruntime-gpu] # for GPU instances
-```
-
-Activate ONNX by initializing your scanner with the use_onnx parameter set to True:
+Gorget ships its own [ONNX Runtime](https://onnxruntime.ai) backend. It needs neither PyTorch nor
+`optimum`, loads the ONNX exports of every scanner model and returns the same results as the
+PyTorch pipelines (the test suite compares both). Without PyTorch installed it is used
+automatically; with PyTorch installed, ask for it per scanner:
 
 ```python
 scanner = Code(languages=["PHP"], use_onnx=True)
 ```
 
-In case you have issues installing the ONNX Runtime package, you can check the [official documentation](https://onnxruntime.ai/docs/install/).
+or for every scanner with `GORGET_BACKEND=onnx`. Scanners that use the same model share one
+ONNX session.
+
+Settings:
+
+- `GORGET_ONNX_THREADS` limits the threads each session uses (for example, `1` per API worker).
+- `GORGET_ONNX_PROVIDERS` picks execution providers, e.g. `CUDAExecutionProvider,CPUExecutionProvider`
+  after replacing `onnxruntime` with `onnxruntime-gpu`.
 
 ## ONNX Runtime with Quantization
 
