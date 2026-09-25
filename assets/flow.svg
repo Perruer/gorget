@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f172a"/><stop offset="1" stop-color="#1e293b"/></linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#cbd5e1"/></marker>
+  </defs>
+  <rect width="1200" height="600" rx="24" fill="url(#bg)"/>
+
+  <!-- application -->
+  <rect x="60" y="215" width="230" height="170" rx="18" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <path d="M130 255h60a10 10 0 0 1 10 10v26a10 10 0 0 1-10 10h-34l-12 10v-10h-14a10 10 0 0 1-10-10v-26a10 10 0 0 1 10-10z" fill="none" stroke="#e2e8f0" stroke-width="4" stroke-linejoin="round"/>
+  <text x="175" y="345" text-anchor="middle" font-size="22" fill="#e2e8f0">Your application</text>
+
+  <!-- gorget -->
+  <rect x="440" y="70" width="320" height="460" rx="24" fill="#111827" stroke="#f59e0b" stroke-width="3"/>
+  <rect x="470" y="100" width="260" height="84" rx="14" fill="#f59e0b"/>
+  <text x="600" y="136" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">Input scanners</text>
+  <text x="600" y="164" text-anchor="middle" font-size="16" fill="#0f172a">injection · PII · secrets · topics</text>
+  <g transform="translate(536 198)">
+    <path d="M6 44a58 58 0 0 0 116 0H94a30 30 0 0 1-60 0z" fill="#cbd5e1" stroke="#475569" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="18" cy="52" r="4" fill="#475569"/><circle cx="110" cy="52" r="4" fill="#475569"/>
+  </g>
+  <text x="600" y="356" text-anchor="middle" font-size="40" font-weight="800" fill="#f8fafc">Gorget</text>
+  <rect x="470" y="416" width="260" height="84" rx="14" fill="#f59e0b"/>
+  <text x="600" y="452" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">Output scanners</text>
+  <text x="600" y="480" text-anchor="middle" font-size="16" fill="#0f172a">leaks · toxicity · URLs · relevance</text>
+
+  <!-- llm -->
+  <rect x="910" y="215" width="230" height="170" rx="18" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <g fill="none" stroke="#e2e8f0" stroke-width="4" stroke-linejoin="round">
+    <path d="M1025 250l32 18v36l-32 18-32-18v-36z"/><path d="M993 268l32 18 32-18M1025 286v36"/>
+  </g>
+  <text x="1025" y="360" text-anchor="middle" font-size="22" fill="#e2e8f0">Language model</text>
+
+  <!-- arrows -->
+  <g fill="none" stroke="#cbd5e1" stroke-width="4" marker-end="url(#arrow)">
+    <path d="M175 215V142H462"/>
+    <path d="M730 142H1025V208"/>
+    <path d="M1025 385V458H738"/>
+    <path d="M470 458H175V392"/>
+  </g>
+</svg>
