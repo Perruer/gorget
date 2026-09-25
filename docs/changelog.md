@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Gorget continues LLM Guard. Entries up to 0.3.16 describe LLM Guard releases by Protect AI;
 their issue links point to the archived [protectai/llm-guard](https://github.com/protectai/llm-guard) repository.
 
-## [0.5.0] - Unreleased
+## [0.5.0] - 2026-09-25
 
 ### Added
 - Your own models ([docs](https://perruer.github.io/gorget/customization/custom_models/)):
