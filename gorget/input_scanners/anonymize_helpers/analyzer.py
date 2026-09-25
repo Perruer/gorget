@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import copy
+from collections.abc import Sequence
 
 import spacy
 from presidio_analyzer import (
@@ -11,6 +14,7 @@ from presidio_analyzer import (
 from presidio_analyzer.context_aware_enhancers import LemmaContextAwareEnhancer
 from presidio_analyzer.nlp_engine import NlpArtifacts, NlpEngine, SpacyNlpEngine
 
+from .custom_recognizer import as_recognizer, check_recognizer
 from .ner_mapping import NERConfig
 from .predefined_recognizers import _get_predefined_recognizers
 from .predefined_recognizers.zh import CustomPatternRecognizer
@@ -163,7 +167,7 @@ def get_transformers_recognizer(
 
 
 def get_analyzer(
-    recognizer: EntityRecognizer,
+    recognizer: EntityRecognizer | Sequence[EntityRecognizer],
     regex_groups: list[RegexPattern],
     custom_names: list[str],
     supported_languages: list[str],
@@ -173,7 +177,8 @@ def get_analyzer(
     registry = RecognizerRegistry(supported_languages=supported_languages)
     registry.load_predefined_recognizers(nlp_engine=nlp_engine)
     registry = _add_recognizers(registry, regex_groups, custom_names, supported_languages)
-    registry.add_recognizer(recognizer)
+    for item in [recognizer] if isinstance(recognizer, EntityRecognizer) else recognizer:
+        registry.add_recognizer(item)
     registry.remove_recognizer("SpacyRecognizer")
 
     return AnalyzerEngine(
@@ -185,3 +190,66 @@ def get_analyzer(
             min_score_with_context_similarity=0.4,
         ),
     )
+
+
+def _builtin_entity_types() -> set[str]:
+    from . import ner_mapping
+    from .regex_patterns import DEFAULT_REGEX_PATTERNS
+
+    known = {pattern["name"].upper() for pattern in DEFAULT_REGEX_PATTERNS}
+    for name, value in vars(ner_mapping).items():
+        if name.endswith("_CONF") and isinstance(value, dict):
+            known.update(value.get("PRESIDIO_SUPPORTED_ENTITIES", []))
+            known.update(value.get("MODEL_TO_PRESIDIO_MAPPING", {}).values())
+    return known
+
+
+def get_recognizers(
+    *,
+    recognizer_conf: NERConfig | Sequence[NERConfig],
+    recognizers: Sequence[EntityRecognizer] | None,
+    use_onnx: bool,
+    language: str,
+) -> list[EntityRecognizer]:
+    """
+    Build the NER recognizers of every configuration (one or several models) and add the
+    caller's own recognizers, registered for the scanner language.
+    """
+    confs = [recognizer_conf] if isinstance(recognizer_conf, dict) else list(recognizer_conf)
+    result: list[EntityRecognizer] = [
+        get_transformers_recognizer(
+            recognizer_conf=conf,
+            use_onnx=use_onnx,
+            supported_language=language,
+        )
+        for conf in confs
+    ]
+    result.extend(as_recognizer(recognizer, language) for recognizer in recognizers or [])
+    return result
+
+
+def get_custom_entity_types(
+    *,
+    recognizer_conf: NERConfig | Sequence[NERConfig] | None,
+    recognizers: Sequence[EntityRecognizer] | None,
+    regex_groups: Sequence[RegexPattern],
+) -> list[str]:
+    """
+    Entity types that only the caller's models, recognizers or regex patterns produce,
+    such as CONTRACT_NUMBER. Scanners look for them by default next to the built-in types.
+    """
+    found: list[str] = []
+    confs = (
+        []
+        if recognizer_conf is None
+        else ([recognizer_conf] if isinstance(recognizer_conf, dict) else list(recognizer_conf))
+    )
+    for conf in confs:
+        found.extend(conf.get("PRESIDIO_SUPPORTED_ENTITIES", []))
+        found.extend(conf.get("MODEL_TO_PRESIDIO_MAPPING", {}).values())
+    for recognizer in recognizers or []:
+        found.extend(check_recognizer(recognizer).supported_entities)
+    found.extend(group["name"] for group in regex_groups)
+
+    known = _builtin_entity_types()
+    return [entity for entity in dict.fromkeys(found) if entity not in known]

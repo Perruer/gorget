@@ -448,3 +448,51 @@ BERT_SMALL_GRAVITEE_PII_CONF: NERConfig = {
     "ID_SCORE_MULTIPLIER": 0.4,
     "ID_ENTITY_NAME": "ID",
 }
+
+
+def make_ner_config(
+    model: Model | str,
+    *,
+    mapping: dict[str, str],
+    entities: list[str] | None = None,
+    labels_to_ignore: list[str] | None = None,
+    chunk_size: int = 600,
+    chunk_overlap: int = 40,
+    onnx_path: str | None = None,
+    onnx_subfolder: str = "",
+) -> NERConfig:
+    """
+    Build a configuration for your own token-classification (NER) model.
+
+    Parameters:
+        model: A `Model`, or a Hugging Face model ID or local folder.
+        mapping: Model labels to entity types, e.g. ``{"CONTRACT": "CONTRACT_NUMBER", "PER": "PERSON"}``.
+            Map a label to "O" to ignore it.
+        entities: Entity types the model reports. Default: the values of `mapping`.
+        labels_to_ignore: Labels to skip. Default: ["O"].
+        chunk_size: Characters per inference chunk for long texts.
+        chunk_overlap: Characters shared by neighbouring chunks.
+        onnx_path: ONNX export of the model, when `model` is a string. Default: same as `model`.
+        onnx_subfolder: Folder of the ONNX file inside `onnx_path`.
+    """
+    if isinstance(model, str):
+        model = Model(
+            path=model,
+            onnx_path=onnx_path or model,
+            onnx_subfolder=onnx_subfolder,
+            pipeline_kwargs={"aggregation_strategy": "simple"},
+        )
+    if entities is None:
+        entities = [entity for entity in dict.fromkeys(mapping.values()) if entity != "O"]
+
+    return {
+        "PRESIDIO_SUPPORTED_ENTITIES": list(entities),
+        "DEFAULT_MODEL": model,
+        "LABELS_TO_IGNORE": list(labels_to_ignore or ["O"]),
+        "DEFAULT_EXPLANATION": f"Identified as {{}} by the {model.path} NER model",
+        "MODEL_TO_PRESIDIO_MAPPING": dict(mapping),
+        "CHUNK_OVERLAP_SIZE": chunk_overlap,
+        "CHUNK_SIZE": chunk_size,
+        "ID_SCORE_MULTIPLIER": 0.4,
+        "ID_ENTITY_NAME": "ID",
+    }

@@ -1,10 +1,17 @@
-from .analyzer import get_analyzer, get_transformers_recognizer
+from .analyzer import (
+    get_analyzer,
+    get_custom_entity_types,
+    get_recognizers,
+    get_transformers_recognizer,
+)
 from .faker import get_fake_value
 from .ner_mapping import *
 from .regex_patterns import get_regex_patterns
 
 __all__ = [
     "get_analyzer",
+    "get_custom_entity_types",
+    "get_recognizers",
     "get_transformers_recognizer",
     "get_fake_value",
     "BERT_BASE_NER_CONF",
@@ -16,4 +23,5 @@ __all__ = [
     "BERT_RU_NER_CONF",
     "BERT_SMALL_GRAVITEE_PII_CONF",
     "get_regex_patterns",
+    "make_ner_config",
 ]

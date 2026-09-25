@@ -1,19 +1,22 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
+from presidio_analyzer import EntityRecognizer
 from presidio_anonymizer import AnonymizerEngine
 
 from gorget.exception import GorgetValidationError
 from gorget.input_scanners.anonymize import (
     ALL_SUPPORTED_LANGUAGES,
-    DEFAULT_ENTITY_TYPES,
     LANGUAGE_DEFAULT_RECOGNIZER_CONF,
     Anonymize,
+    _entity_types,
 )
 from gorget.input_scanners.anonymize_helpers import (
     DEBERTA_AI4PRIVACY_v2_CONF,
     get_analyzer,
+    get_recognizers,
     get_regex_patterns,
-    get_transformers_recognizer,
 )
 from gorget.input_scanners.anonymize_helpers.ner_mapping import NERConfig
 from gorget.util import calculate_risk_score, get_logger
@@ -41,55 +44,57 @@ class Sensitive(Scanner):
         entity_types: list[str] | None = None,
         regex_patterns: list[DefaultRegexPatterns | RegexPatternsReuse] | None = None,
         redact: bool = False,
-        recognizer_conf: NERConfig | None = None,
+        recognizer_conf: NERConfig | Sequence[NERConfig] | None = None,
         threshold: float = 0.5,
         use_onnx: bool = False,
         language: str = "en",
+        recognizers: Sequence[EntityRecognizer] | None = None,
     ) -> None:
         """
         Initializes an instance of the Sensitive class.
 
         Parameters:
-           entity_types (Optional[Sequence[str]]): The entity types to look for in the output. Defaults to all
-                                               entity types.
+           entity_types (Optional[Sequence[str]]): The entity types to look for in the output. Defaults to the
+                                               built-in types plus the custom types of your recognizers,
+                                               NER models and regex patterns.
            regex_patterns (Optional[List[Dict]]): List of regex patterns to use for detection. Default is None.
            redact (bool): Redact found sensitive entities. Default to False.
-           recognizer_conf (Optional[Dict]): Configuration to recognize PII data. Default is Ai4Privacy DeBERTa.
+           recognizer_conf (Optional[Dict]): Configuration of the NER model, or a list of them. Default is Ai4Privacy DeBERTa;
+                                               an empty list runs no NER model.
            threshold (float): Acceptance threshold. Default is 0.
            use_onnx (bool): Use ONNX model for inference. Default is False.
            language (str): Language of the output. Default is "en".
+           recognizers (Optional[Sequence]): Your own Presidio recognizers or `gorget.plugins.CallableRecognizer`s.
         """
         if language not in ALL_SUPPORTED_LANGUAGES:
             raise GorgetValidationError(
                 f"Language must be in the list of allowed: {ALL_SUPPORTED_LANGUAGES}"
             )
 
-        if not entity_types:
-            LOGGER.debug(
-                "No entity types provided, using default",
-                default_entity_types=DEFAULT_ENTITY_TYPES,
-            )
-            entity_types = DEFAULT_ENTITY_TYPES.copy()
-        entity_types.append("CUSTOM")
-
-        self._entity_types = entity_types
+        regex_groups = get_regex_patterns(regex_patterns)
+        self._entity_types = _entity_types(
+            entity_types,
+            recognizer_conf=recognizer_conf,
+            recognizers=recognizers,
+            regex_groups=regex_groups,
+        )
         self._redact = redact
         self._threshold = threshold
         self._language = language
 
-        if not recognizer_conf:
+        if recognizer_conf is None:
             recognizer_conf = LANGUAGE_DEFAULT_RECOGNIZER_CONF.get(
                 language, DEBERTA_AI4PRIVACY_v2_CONF
             )
 
-        transformers_recognizer = get_transformers_recognizer(
-            recognizer_conf=recognizer_conf,
-            use_onnx=use_onnx,
-            supported_language=language,
-        )
         self._analyzer = get_analyzer(
-            transformers_recognizer,
-            get_regex_patterns(regex_patterns),
+            get_recognizers(
+                recognizer_conf=recognizer_conf,
+                recognizers=recognizers,
+                use_onnx=use_onnx,
+                language=language,
+            ),
+            regex_groups,
             [],
             list(set(["en", language])),
         )

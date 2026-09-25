@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Sequence
 from typing import Final
 
-from presidio_analyzer import RecognizerResult
+from presidio_analyzer import EntityRecognizer, RecognizerResult
 from presidio_anonymizer.core.text_replace_builder import TextReplaceBuilder
 
 from gorget.input_scanners.anonymize_helpers.ner_mapping import NERConfig
@@ -16,9 +17,10 @@ from .anonymize_helpers import (
     BERT_RU_NER_CONF,
     DEBERTA_AI4PRIVACY_v2_CONF,
     get_analyzer,
+    get_custom_entity_types,
     get_fake_value,
+    get_recognizers,
     get_regex_patterns,
-    get_transformers_recognizer,
 )
 from .anonymize_helpers.regex_patterns import DefaultRegexPatterns, RegexPatternsReuse
 from .base import Scanner
@@ -53,6 +55,34 @@ LANGUAGE_DEFAULT_RECOGNIZER_CONF: Final[dict[str, NERConfig]] = {
 }
 
 
+def _entity_types(
+    entity_types: Sequence[str] | None,
+    *,
+    recognizer_conf: NERConfig | Sequence[NERConfig] | None,
+    recognizers: Sequence[EntityRecognizer] | None,
+    regex_groups,
+) -> list[str]:
+    """The requested entity types, or the defaults plus the caller's own types; always with CUSTOM."""
+    if entity_types:
+        result = list(entity_types)
+    else:
+        custom = get_custom_entity_types(
+            recognizer_conf=recognizer_conf,
+            recognizers=recognizers,
+            regex_groups=regex_groups,
+        )
+        LOGGER.debug(
+            "No entity types provided, using default",
+            default_entities=DEFAULT_ENTITY_TYPES,
+            custom_entities=custom,
+        )
+        result = DEFAULT_ENTITY_TYPES + custom
+
+    if "CUSTOM" not in result:
+        result.append("CUSTOM")
+    return result
+
+
 class Anonymize(Scanner):
     """
     Anonymize sensitive data in the text using NLP (English only) and predefined regex patterns.
@@ -71,10 +101,11 @@ class Anonymize(Scanner):
         preamble: str = "",
         regex_patterns: list[DefaultRegexPatterns | RegexPatternsReuse] | None = None,
         use_faker: bool = False,
-        recognizer_conf: NERConfig | None = None,
+        recognizer_conf: NERConfig | Sequence[NERConfig] | None = None,
         threshold: float = 0.5,
         use_onnx: bool = False,
         language: str = "en",
+        recognizers: Sequence[EntityRecognizer] | None = None,
     ) -> None:
         """
         Initialize an instance of Anonymize class.
@@ -83,14 +114,19 @@ class Anonymize(Scanner):
             vault: A vault instance to store the anonymized data.
             hidden_names: List of names to be anonymized e.g. [REDACTED_CUSTOM_1].
             allowed_names: List of names allowed in the text without anonymizing.
-            entity_types: List of entity types to be detected. If not provided, defaults to all.
+            entity_types: List of entity types to be detected. If not provided, defaults to the built-in types
+                plus every custom type that your recognizers, NER models or regex patterns produce.
             preamble: Text to prepend to sanitized prompt. If not provided, defaults to an empty string.
             regex_patterns: List of regex patterns to be used for detection. If not provided, defaults to predefined list.
             use_faker: Whether to use faker instead of placeholders in applicable cases. If not provided, defaults to False, replaces with placeholders [REDACTED_PERSON_1].
-            recognizer_conf: Configuration to recognize PII data. Default is Ai4Privacy DeBERTa model.
+            recognizer_conf: Configuration of the NER model, or a list of configurations to run several models.
+                Default is Ai4Privacy DeBERTa model (Gherman BERT for Russian); an empty list runs no NER model,
+                so only `recognizers` and regex patterns are used.
             threshold: Acceptance threshold. Default is 0.
             use_onnx: Whether to use ONNX runtime for inference. Default is False.
             language: Language of the anonymize detect. Default is "en".
+            recognizers: Your own Presidio recognizers, or entity detectors wrapped in
+                `gorget.plugins.CallableRecognizer`, used next to the NER model and regex patterns.
         """
 
         if language not in ALL_SUPPORTED_LANGUAGES:
@@ -100,14 +136,13 @@ class Anonymize(Scanner):
 
         os.environ["TOKENIZERS_PARALLELISM"] = "false"  # Disables huggingface/tokenizers warning
 
-        if not entity_types:
-            LOGGER.debug(
-                "No entity types provided, using default",
-                default_entities=DEFAULT_ENTITY_TYPES,
-            )
-            entity_types = DEFAULT_ENTITY_TYPES.copy()
-
-        entity_types.append("CUSTOM")
+        regex_groups = get_regex_patterns(regex_patterns)
+        entity_types = _entity_types(
+            entity_types,
+            recognizer_conf=recognizer_conf,
+            recognizers=recognizers,
+            regex_groups=regex_groups,
+        )
 
         if not hidden_names:
             hidden_names = []
@@ -120,20 +155,19 @@ class Anonymize(Scanner):
         self._threshold = threshold
         self._language = language
 
-        if not recognizer_conf:
+        if recognizer_conf is None:
             recognizer_conf = LANGUAGE_DEFAULT_RECOGNIZER_CONF.get(
                 language, DEBERTA_AI4PRIVACY_v2_CONF
             )
 
-        transformers_recognizer = get_transformers_recognizer(
-            recognizer_conf=recognizer_conf,
-            use_onnx=use_onnx,
-            supported_language=language,
-        )
-
         self._analyzer = get_analyzer(
-            recognizer=transformers_recognizer,
-            regex_groups=get_regex_patterns(regex_patterns),
+            recognizer=get_recognizers(
+                recognizer_conf=recognizer_conf,
+                recognizers=recognizers,
+                use_onnx=use_onnx,
+                language=language,
+            ),
+            regex_groups=regex_groups,
             custom_names=hidden_names,
             supported_languages=list(set(["en", language])),
         )
