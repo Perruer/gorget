@@ -52,7 +52,7 @@ jobs:
       - name: Install without PyTorch
         run: |
           python -m pip install --upgrade pip
-          python -m pip install . "pytest>=8"
+          python -m pip install . ./gorget_api "pytest>=8" httpx
           python -c "import importlib.util, sys; sys.exit(importlib.util.find_spec('torch') is not None)"
       - name: Test
         run: python -m pytest -p no:cacheprovider -q -rfE

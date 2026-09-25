@@ -8,7 +8,9 @@ import structlog
 from opentelemetry import metrics
 
 from gorget import input_scanners, output_scanners
-from gorget.input_scanners.anonymize_helpers import DEBERTA_AI4PRIVACY_v2_CONF
+from gorget.input_scanners import anonymize_helpers
+from gorget.input_scanners.anonymize import LANGUAGE_DEFAULT_RECOGNIZER_CONF
+from gorget.input_scanners.anonymize_helpers import DEBERTA_AI4PRIVACY_v2_CONF, make_ner_config
 from gorget.input_scanners.ban_code import MODEL_SM as BAN_CODE_MODEL
 from gorget.input_scanners.ban_competitors import MODEL_V1 as BAN_COMPETITORS_MODEL
 from gorget.input_scanners.ban_topics import MODEL_DEBERTA_BASE_V2 as BAN_TOPICS_MODEL
@@ -24,6 +26,7 @@ from gorget.output_scanners.bias import DEFAULT_MODEL as BIAS_MODEL
 from gorget.output_scanners.malicious_urls import DEFAULT_MODEL as MALICIOUS_URLS_MODEL
 from gorget.output_scanners.no_refusal import DEFAULT_MODEL as NO_REFUSAL_MODEL
 from gorget.output_scanners.relevance import MODEL_EN_BGE_SMALL as RELEVANCE_MODEL
+from gorget.plugins import build_object, load_object
 from gorget.vault import Vault
 
 from .config import ScannerConfig
@@ -110,6 +113,53 @@ def _configure_model(model: Model, scanner_config: Optional[Dict]):
         scanner_config.pop("model_onnx_file_name")
 
 
+def _is_plugin(scanner_name: str, builtin_names) -> bool:
+    return ":" in scanner_name or scanner_name not in builtin_names
+
+
+def _resolve_recognizer_conf(spec):
+    """
+    A NER configuration from YAML: the name of a built-in one (``BERT_BASE_NER_CONF``), an
+    import path, a list of those, or an inline model::
+
+        recognizer_conf:
+          model: acme/contracts-ner        # Hugging Face ID or local folder with an ONNX export
+          mapping: {CONTRACT: CONTRACT_NUMBER, PER: PERSON}
+    """
+    if isinstance(spec, list):
+        return [_resolve_recognizer_conf(item) for item in spec]
+    if isinstance(spec, str):
+        if spec.endswith("_CONF") and hasattr(anonymize_helpers, spec):
+            return getattr(anonymize_helpers, spec)
+        return load_object(spec)
+    if isinstance(spec, dict) and "class" in spec:
+        return build_object(spec)
+    if isinstance(spec, dict) and "model" in spec:
+        params = dict(spec)
+        return make_ner_config(params.pop("model"), **params)
+    return spec
+
+
+def _configure_ner(scanner_config: Dict) -> None:
+    """Recognizers and NER models of Anonymize and Sensitive."""
+    if scanner_config.get("recognizers"):
+        scanner_config["recognizers"] = [
+            build_object(item) for item in scanner_config["recognizers"]
+        ]
+
+    if scanner_config.get("recognizer_conf") is not None:
+        scanner_config["recognizer_conf"] = _resolve_recognizer_conf(
+            scanner_config["recognizer_conf"]
+        )
+        return
+
+    conf = LANGUAGE_DEFAULT_RECOGNIZER_CONF.get(
+        scanner_config.get("language", "en"), DEBERTA_AI4PRIVACY_v2_CONF
+    )
+    _configure_model(conf["DEFAULT_MODEL"], scanner_config)
+    scanner_config["recognizer_conf"] = conf
+
+
 def _get_input_scanner(
     scanner_name: str,
     scanner_config: Optional[Dict],
@@ -118,6 +168,10 @@ def _get_input_scanner(
 ):
     if scanner_config is None:
         scanner_config = {}
+
+    if _is_plugin(scanner_name, input_scanners.__all__):
+        # Your own scanner class: "package.module:Class" or a gorget.plugins entry point.
+        return build_object({"class": scanner_name, "params": scanner_config})
 
     if scanner_name == "Anonymize":
         scanner_config["vault"] = vault
@@ -136,8 +190,7 @@ def _get_input_scanner(
         scanner_config["use_onnx"] = True
 
     if scanner_name == "Anonymize":
-        _configure_model(DEBERTA_AI4PRIVACY_v2_CONF["DEFAULT_MODEL"], scanner_config)
-        scanner_config["recognizer_conf"] = DEBERTA_AI4PRIVACY_v2_CONF
+        _configure_ner(scanner_config)
 
     if scanner_name == "BanCode":
         _configure_model(BAN_CODE_MODEL, scanner_config)
@@ -164,8 +217,11 @@ def _get_input_scanner(
         scanner_config["model"] = LANGUAGE_MODEL
 
     if scanner_name == "PromptInjection":
-        _configure_model(PROMPT_INJECTION_MODEL, scanner_config)
-        scanner_config["model"] = PROMPT_INJECTION_MODEL
+        if scanner_config.get("classifier") is not None:
+            scanner_config["classifier"] = build_object(scanner_config["classifier"])
+        else:
+            _configure_model(PROMPT_INJECTION_MODEL, scanner_config)
+            scanner_config["model"] = PROMPT_INJECTION_MODEL
 
     if scanner_name == "Toxicity":
         _configure_model(TOXICITY_MODEL, scanner_config)
@@ -188,6 +244,9 @@ def _get_output_scanner(
 ):
     if scanner_config is None:
         scanner_config = {}
+
+    if _is_plugin(scanner_name, output_scanners.__all__):
+        return build_object({"class": scanner_name, "params": scanner_config})
 
     if scanner_name == "Deanonymize":
         scanner_config["vault"] = vault
@@ -255,8 +314,7 @@ def _get_output_scanner(
         scanner_config["model"] = RELEVANCE_MODEL
 
     if scanner_name == "Sensitive":
-        _configure_model(DEBERTA_AI4PRIVACY_v2_CONF["DEFAULT_MODEL"], scanner_config)
-        scanner_config["recognizer_conf"] = DEBERTA_AI4PRIVACY_v2_CONF
+        _configure_ner(scanner_config)
 
     if scanner_name == "Toxicity":
         _configure_model(TOXICITY_MODEL, scanner_config)

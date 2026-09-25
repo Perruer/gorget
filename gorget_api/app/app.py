@@ -2,7 +2,7 @@ import asyncio
 import concurrent.futures
 import os
 import time
-from typing import Annotated, Callable, List
+from typing import Annotated, Callable, List, Optional
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Response, status
@@ -24,6 +24,9 @@ from slowapi.util import get_remote_address
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from gorget import scan_output, scan_prompt
+from gorget.conversation import ConversationRisk, scan_conversation
+from gorget.exception import GorgetValidationError
+from gorget.input_scanners import PromptInjection
 from gorget.input_scanners.base import Scanner as InputScanner
 from gorget.output_scanners.base import Scanner as OutputScanner
 from gorget.vault import Vault
@@ -39,10 +42,14 @@ from .scanner import (
     scanners_valid_counter,
 )
 from .schemas import (
+    AnalyzeConversationRequest,
+    AnalyzeConversationResponse,
     AnalyzeOutputRequest,
     AnalyzeOutputResponse,
     AnalyzePromptRequest,
     AnalyzePromptResponse,
+    ScanConversationRequest,
+    ScanConversationResponse,
     ScanOutputRequest,
     ScanOutputResponse,
     ScanPromptRequest,
@@ -394,6 +401,102 @@ def register_routes(
                 )
 
         return response
+
+    conversation_risk: Optional[ConversationRisk] = None
+
+    def _conversation_risk(input_scanners: List[InputScanner]) -> Optional[ConversationRisk]:
+        nonlocal conversation_risk
+        risk_config = config.conversation.risk
+        if not risk_config.enabled:
+            return None
+        if conversation_risk is None:
+            injection = next((s for s in input_scanners if isinstance(s, PromptInjection)), None)
+            if injection is None:
+                LOGGER.warning("Conversation risk needs a PromptInjection input scanner")
+                return None
+            conversation_risk = ConversationRisk.from_scanner(
+                injection,
+                decay=risk_config.decay,
+                threshold=risk_config.threshold,
+                min_score=risk_config.min_score,
+            )
+        return conversation_risk
+
+    async def _scan_conversation(request: ScanConversationRequest, input_scanners):
+        suppress = set(request.scanners_suppress or [])
+        risk = None if "ConversationRisk" in suppress else _conversation_risk(input_scanners)
+        if suppress:
+            LOGGER.debug("Suppressing scanners", scanners=list(suppress))
+            input_scanners = [s for s in input_scanners if type(s).__name__ not in suppress]
+
+        messages = [message.model_dump() for message in request.messages]
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            loop = asyncio.get_event_loop()
+            try:
+                result = await asyncio.wait_for(
+                    loop.run_in_executor(
+                        executor,
+                        lambda: scan_conversation(
+                            input_scanners,
+                            messages,
+                            window=config.conversation.window,
+                            tool_scanners=None if config.conversation.scan_tool_messages else [],
+                            risk=risk,
+                            fail_fast=bool(config.app.scan_fail_fast),
+                        ),
+                    ),
+                    timeout=config.app.scan_prompt_timeout,
+                )
+            except asyncio.TimeoutError:
+                raise HTTPException(
+                    status_code=status.HTTP_408_REQUEST_TIMEOUT,
+                    detail="Request timeout.",
+                )
+            except GorgetValidationError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+                )
+
+        for scanner, valid in result.results_valid.items():
+            scanners_valid_counter.add(
+                1, {"source": "conversation", "valid": valid, "scanner": scanner}
+            )
+        return result
+
+    @app.post(
+        "/analyze/conversation",
+        tags=["Analyze"],
+        response_model=AnalyzeConversationResponse,
+        status_code=status.HTTP_200_OK,
+        description="Scan a chat history: the latest user message, recent messages together, "
+        "tool results and, when enabled, the risk accumulated over the conversation",
+    )
+    async def submit_analyze_conversation(
+        request: AnalyzeConversationRequest,
+        _: Annotated[bool, Depends(check_auth)],
+        input_scanners: List[InputScanner] = Depends(input_scanners_func),
+    ) -> AnalyzeConversationResponse:
+        result = await _scan_conversation(request, input_scanners)
+        return AnalyzeConversationResponse(
+            sanitized_prompt=result.sanitized_prompt,
+            is_valid=result.is_valid,
+            scanners=result.results_score,
+        )
+
+    @app.post(
+        "/scan/conversation",
+        tags=["Analyze"],
+        response_model=ScanConversationResponse,
+        status_code=status.HTTP_200_OK,
+        description="Same checks as /analyze/conversation without the sanitized prompt",
+    )
+    async def submit_scan_conversation(
+        request: ScanConversationRequest,
+        _: Annotated[bool, Depends(check_auth)],
+        input_scanners: List[InputScanner] = Depends(input_scanners_func),
+    ) -> ScanConversationResponse:
+        result = await _scan_conversation(request, input_scanners)
+        return ScanConversationResponse(is_valid=result.is_valid, scanners=result.results_score)
 
     @app.post(
         "/scan/prompt",

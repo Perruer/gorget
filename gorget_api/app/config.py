@@ -44,6 +44,19 @@ class AppConfig(BaseModel):
     lazy_load: Optional[bool] = Field(default=False)
 
 
+class ConversationRiskConfig(BaseModel):
+    enabled: bool = Field(default=False)
+    decay: float = Field(default=0.7)
+    threshold: float = Field(default=1.2)
+    min_score: float = Field(default=0.2)
+
+
+class ConversationConfig(BaseModel):
+    window: int = Field(default=3)
+    scan_tool_messages: bool = Field(default=True)
+    risk: ConversationRiskConfig = Field(default_factory=ConversationRiskConfig)
+
+
 class ScannerConfig(BaseModel):
     type: str
     params: Optional[Dict] = Field(default_factory=dict)
@@ -55,6 +68,7 @@ class Config(BaseModel):
     rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
     auth: Optional[AuthConfig] = Field(default=None)
     app: AppConfig = Field(default_factory=AppConfig)
+    conversation: ConversationConfig = Field(default_factory=ConversationConfig)
     tracing: Optional[TracingConfig] = Field(default=None)
     metrics: Optional[MetricsConfig] = Field(default=None)
 

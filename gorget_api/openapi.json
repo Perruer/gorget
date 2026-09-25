@@ -3,7 +3,7 @@
   "info": {
     "title": "Gorget API",
     "description": "API to run Gorget scanners.",
-    "version": "0.0.10"
+    "version": "0.5.0"
   },
   "paths": {
     "/": {
@@ -204,6 +204,100 @@
         ]
       }
     },
+    "/analyze/conversation": {
+      "post": {
+        "tags": [
+          "Analyze"
+        ],
+        "summary": "Submit Analyze Conversation",
+        "description": "Scan a chat history: the latest user message, recent messages together, tool results and, when enabled, the risk accumulated over the conversation",
+        "operationId": "submit_analyze_conversation_analyze_conversation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/scan/conversation": {
+      "post": {
+        "tags": [
+          "Analyze"
+        ],
+        "summary": "Submit Scan Conversation",
+        "description": "Same checks as /analyze/conversation without the sanitized prompt",
+        "operationId": "submit_scan_conversation_scan_conversation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/scan/prompt": {
       "post": {
         "tags": [
@@ -273,6 +367,57 @@
   },
   "components": {
     "schemas": {
+      "AnalyzeConversationRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "type": "array",
+            "title": "Chat history, oldest first"
+          },
+          "scanners_suppress": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scanners to suppress",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "AnalyzeConversationRequest"
+      },
+      "AnalyzeConversationResponse": {
+        "properties": {
+          "is_valid": {
+            "type": "boolean",
+            "title": "Whether the conversation is safe"
+          },
+          "scanners": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Risk scores of individual checks",
+            "description": "Scanner names for the latest user message, Name[window] for recent messages scanned together, Name[tool] for tool results, ConversationRisk for the accumulated risk"
+          },
+          "sanitized_prompt": {
+            "type": "string",
+            "title": "Sanitized latest user message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_valid",
+          "scanners",
+          "sanitized_prompt"
+        ],
+        "title": "AnalyzeConversationResponse"
+      },
       "AnalyzeOutputRequest": {
         "properties": {
           "prompt": {
@@ -372,6 +517,34 @@
         ],
         "title": "AnalyzePromptResponse"
       },
+      "ChatMessage": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role: user, assistant, system, tool"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text, or OpenAI content parts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "title": "ChatMessage"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -384,6 +557,52 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "ScanConversationRequest": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            },
+            "type": "array",
+            "title": "Chat history, oldest first"
+          },
+          "scanners_suppress": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scanners to suppress",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "ScanConversationRequest"
+      },
+      "ScanConversationResponse": {
+        "properties": {
+          "is_valid": {
+            "type": "boolean",
+            "title": "Whether the conversation is safe"
+          },
+          "scanners": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Risk scores of individual checks",
+            "description": "Scanner names for the latest user message, Name[window] for recent messages scanned together, Name[tool] for tool results, ConversationRisk for the accumulated risk"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_valid",
+          "scanners"
+        ],
+        "title": "ScanConversationResponse"
       },
       "ScanOutputRequest": {
         "properties": {
@@ -497,6 +716,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",

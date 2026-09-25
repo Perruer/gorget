@@ -22,7 +22,7 @@ requires-python = ">=3.10"
 
 dependencies = [
     "fastapi>=0.115",
-    "gorget>=0.4.0",
+    "gorget>=0.5.0",
     "pydantic>=2.7",
     "pyyaml>=6",
     "uvicorn[standard]>=0.30",
@@ -42,7 +42,7 @@ dependencies = [
 # The CPU image runs on ONNX Runtime, which the library already depends on.
 cpu = []
 gpu = [
-  "gorget[torch]>=0.4.0",
+  "gorget[torch]>=0.5.0",
 ]
 
 [tool.setuptools]
