@@ -39,7 +39,9 @@ scanner = Sensitive(entity_types=["PERSON", "EMAIL"], redact=True)
 sanitized_output, is_valid, risk_score = scanner.scan(prompt, model_output)
 ```
 
-To enhance flexibility, users can introduce their patterns through the `regex_pattern_groups_path`.
+To enhance flexibility, users can introduce their patterns through `regex_patterns`, their own
+recognizers through `recognizers` and their own NER models through `recognizer_conf`, as for
+[Anonymize](../input_scanners/anonymize.md); see [Your own models](../customization/custom_models.md).
 
 The `redact` feature, when enabled, ensures sensitive entities are seamlessly replaced.
 

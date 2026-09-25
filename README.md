@@ -33,7 +33,7 @@ install on Python 3.13, and installs spaCy models with pip while your service is
 
 Gorget keeps the LLM Guard API and fixes what broke:
 
-| | LLM Guard 0.3.16 | Gorget 0.4 |
+| | LLM Guard 0.3.16 | Gorget 0.5 |
 |---|---|---|
 | PyTorch | required (several GB with CUDA) | optional: every scanner runs on ONNX Runtime |
 | Python | 3.10–3.12 | 3.10–3.14 |
@@ -42,6 +42,8 @@ Gorget keeps the LLM Guard API and fixes what broke:
 | Russian personal data | no | INN, SNILS, OGRN, passport, phones, names |
 | Model licenses | not shown; the default PII model is non-commercial | [listed](https://github.com/Perruer/gorget/blob/main/docs/models.md); warning and an Apache-2.0 alternative |
 | `MaliciousURLs` | broken: its model was deleted | works through the ONNX export |
+| Your own models | a model path; labels other than `INJECTION` were read backwards | any classifier or NER model, injection categories, custom data types, plugins in the API config |
+| Attacks over several messages | not checked | chat history: recent messages together, tool results, accumulated risk |
 
 ## Install
 
@@ -124,6 +126,43 @@ text, is_valid, risk = scanner.scan("Меня зовут Иван Петров, 
 Names and addresses come from a Russian NER model; INN, SNILS and OGRN are accepted only when
 their control sums match, which keeps order numbers and phone numbers from being masked by
 mistake. Details are in the [Anonymize docs](https://github.com/Perruer/gorget/blob/main/docs/input_scanners/anonymize.md#russian-personal-data).
+
+## Your own models
+
+Plug in your injection classifier, NER models and your own types of sensitive data:
+
+```python
+import re
+from gorget.input_scanners import Anonymize, PromptInjection
+from gorget.plugins import CallableRecognizer, Entity
+from gorget.vault import Vault
+
+injection = PromptInjection(classifier=acme_classifier, injection_labels=["jailbreak", "prompt_leak"])
+
+def contract_numbers(text, language):
+    for m in re.finditer(r"\bCTR-\d{6}\b", text):
+        yield Entity("CONTRACT_NUMBER", m.start(), m.end(), 0.9)
+
+anonymize = Anonymize(Vault(), recognizers=[CallableRecognizer(contract_numbers, entities=["CONTRACT_NUMBER"])])
+anonymize.scan("Contract CTR-123456")  # 'Contract [REDACTED_CONTRACT_NUMBER_1]'
+```
+
+The API server takes the same plugins by import path in its YAML config. See
+[Your own models](https://github.com/Perruer/gorget/blob/main/docs/customization/custom_models.md).
+
+## Attacks over several messages
+
+```python
+from gorget.conversation import ConversationRisk, scan_conversation
+
+result = scan_conversation(scanners, messages, risk=ConversationRisk.from_scanner(injection))
+```
+
+`scan_conversation` takes the chat history in the OpenAI format and, besides the latest message,
+scans recent user messages together (split instructions), tool results (indirect injection) and,
+optionally, the injection risk accumulated over the conversation. The API server has
+`/analyze/conversation`. What it can and cannot catch is in
+[Multi-turn attacks](https://github.com/Perruer/gorget/blob/main/docs/tutorials/conversations.md).
 
 ## API server
 

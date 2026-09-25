@@ -64,6 +64,24 @@ sanitized_prompt, is_valid, risk_score = scanner.scan(prompt)
 
     We don't recommend using this scanner for system prompts. It's designed to work with user inputs.
 
+### Your own classifier and injection categories
+
+Any text-classification model or your own classifier (a callable) can replace the default model.
+`injection_labels` says which labels mean an attack; several categories are added up, and
+`detect()` returns the most likely one:
+
+```python
+scanner = PromptInjection(classifier=acme_classifier, injection_labels=["jailbreak", "prompt_leak"])
+detection = scanner.detect(prompt)  # InjectionDetection(score=0.97, label="prompt_leak", is_injection=True)
+```
+
+See [Your own models](../customization/custom_models.md).
+
+### Attacks over several messages
+
+The scanner checks one text. For split instructions, slow escalation and injections in tool
+results use [`scan_conversation`](../tutorials/conversations.md).
+
 ## Optimization Strategies
 
 [Read more](../tutorials/optimization.md)

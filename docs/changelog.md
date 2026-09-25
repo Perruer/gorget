@@ -8,9 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Gorget continues LLM Guard. Entries up to 0.3.16 describe LLM Guard releases by Protect AI;
 their issue links point to the archived [protectai/llm-guard](https://github.com/protectai/llm-guard) repository.
 
-## [Unreleased]
+## [0.5.0] - Unreleased
+
+### Added
+- Your own models ([docs](https://perruer.github.io/gorget/customization/custom_models/)):
+    - `PromptInjection(injection_labels=[...])` for models whose labels are not `INJECTION`, with
+      several injection categories added up; `PromptInjection.detect()` returns the score and category.
+    - `PromptInjection(classifier=...)`: any callable classifier (scikit-learn, an internal service,
+      a vendor API) instead of a Hugging Face model.
+    - `Anonymize` and `Sensitive` take `recognizers` (Presidio recognizers or any function wrapped in
+      `gorget.plugins.CallableRecognizer`) and several NER models in `recognizer_conf`;
+      `recognizer_conf=[]` runs no built-in NER model. `make_ner_config` describes your own NER model.
+    - Custom entity types that only your recognizers, models or regex patterns produce
+      (`CONTRACT_NUMBER`) are detected by default and get their own placeholders.
+    - API server: classifiers, recognizers, NER models and whole scanner classes by import path or
+      by name from the `gorget.plugins` entry point group; inline NER models in YAML.
+- Conversations ([docs](https://perruer.github.io/gorget/tutorials/conversations/)):
+  `gorget.conversation.scan_conversation` checks a chat history in the OpenAI format: the latest user
+  message, recent user messages together (split instructions), tool results after the latest user
+  message (indirect injection) and, opt-in, the injection risk accumulated over the conversation
+  (`ConversationRisk`). API endpoints `/analyze/conversation` and `/scan/conversation` with a
+  `conversation` section in `scanners.yml`.
 
 ### Fixed
+- `PromptInjection` inverted the scores of models whose injection label is not called `INJECTION`.
+- `Anonymize` and `Sensitive` added `CUSTOM` to the `entity_types` list passed by the caller.
+- API server: `Anonymize` and `Sensitive` ignored `recognizer_conf` and `language` and always
+  used the English AI4Privacy model (CC-BY-NC-4.0); they now use the configured or language default model.
 - Model downloads wait and retry when Hugging Face answers 429 (rate limit) instead of failing.
 
 ## [0.4.0] - 2026-09-24

@@ -19,6 +19,9 @@ All configurations are stored in `config/scanners.yml`. It supports configuring 
 - `SCAN_PROMPT_TIMEOUT` (int): Time in seconds after which a prompt scan will timeout. Default is 10 seconds.
 - `SCAN_OUTPUT_TIMEOUT` (int): Time in seconds after which an output scan will timeout. Default is 30 seconds.
 - `APP_PORT` (int): Port to run the API. Default is `8000`.
+- `CONVERSATION_WINDOW` (int): How many recent user messages `/analyze/conversation` also scans together. Default is 3.
+- `CONVERSATION_SCAN_TOOLS` (bool): Scan tool results after the latest user message for injections. Default is `true`.
+- `CONVERSATION_RISK` (bool): Add up injection scores over the conversation. Default is `false`.
 
 ### Best practices
 
@@ -36,6 +39,18 @@ You can set `model_path` in each supported scanner with the folder to the ONNX v
 This way, the models won't be downloaded each time the container starts.
 
 [Relevant notebook](../tutorials/notebooks/local_models.ipynb)
+
+### Your own models and scanners
+
+Scanners in `scanners.yml` can use your own classifiers, NER models and recognizers, and a scanner
+type can be a class of your own (`type: acme_guard.scanners:ContractPolicy`). See
+[Your own models](../customization/custom_models.md#api-server).
+
+### Conversations
+
+`/analyze/conversation` and `/scan/conversation` take a chat history (`messages` in the OpenAI format)
+and also check recent messages together, tool results and, when enabled, the risk accumulated over
+the conversation. See [Multi-turn attacks](../tutorials/conversations.md#api).
 
 ### Lazy loading
 

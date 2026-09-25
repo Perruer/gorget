@@ -69,6 +69,10 @@ Some model providers may train their models on your requests, which can be a pri
     - Commercial-friendly PII model (Apache-2.0): [gravitee-io/bert-small-pii-detection](https://huggingface.co/gravitee-io/bert-small-pii-detection) as `BERT_SMALL_GRAVITEE_PII_CONF`.
     - Models from AI4Privacy: [Isotonic/distilbert_finetuned_ai4privacy_v2](https://huggingface.co/Isotonic/distilbert_finetuned_ai4privacy_v2) and [Isotonic/deberta-v3-base_finetuned_ai4privacy_v2](https://huggingface.co/Isotonic/deberta-v3-base_finetuned_ai4privacy_v2).
 - **Support of multiple languages**: English, Chinese and Russian.
+- **Your own data types and models**: pass `recognizers` (Presidio recognizers or any function wrapped
+  in `CallableRecognizer`), several NER models in `recognizer_conf`, or your own model through
+  `make_ner_config`. Custom types like `CONTRACT_NUMBER` are detected by default. See
+  [Your own models](../customization/custom_models.md).
 
 !!! warning "Model licenses"
 

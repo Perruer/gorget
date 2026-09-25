@@ -34,7 +34,7 @@ Gorget стоит между вашим приложением и языково
 
 Gorget сохраняет API LLM Guard и чинит то, что сломалось:
 
-| | LLM Guard 0.3.16 | Gorget 0.4 |
+| | LLM Guard 0.3.16 | Gorget 0.5 |
 |---|---|---|
 | PyTorch | обязателен (с CUDA — несколько гигабайт) | не нужен: все сканеры работают на ONNX Runtime |
 | Python | 3.10–3.12 | 3.10–3.14 |
@@ -43,6 +43,8 @@ Gorget сохраняет API LLM Guard и чинит то, что сломал�
 | Персональные данные РФ | нет | ИНН, СНИЛС, ОГРН, паспорт, телефоны, ФИО |
 | Лицензии моделей | не указаны; модель анонимизации по умолчанию — некоммерческая | [список](docs/models.md), предупреждение и замена под Apache-2.0 |
 | `MaliciousURLs` | сломан: модель удалили | работает через ONNX-экспорт |
+| Свои модели | только путь к модели; метки кроме `INJECTION` читались наоборот | любой классификатор и NER-модель, категории инъекций, свои типы данных, плагины в конфиге сервера |
+| Атаки из нескольких сообщений | не проверялись | история диалога: последние сообщения вместе, ответы инструментов, накопленный риск |
 
 ## Установка
 
@@ -104,6 +106,43 @@ pip install gorget
 Код менять не нужно: вместе с Gorget ставится пакет совместимости `llm_guard`, который отдаёт те же
 классы, а `LLMGuardValidationError` — псевдоним `GorgetValidationError`. Импорты можно переименовать
 в `gorget`, когда будет удобно.
+
+## Свои модели
+
+Можно подключить свой классификатор инъекций, свои NER-модели и свои типы чувствительных данных:
+
+```python
+import re
+from gorget.input_scanners import Anonymize, PromptInjection
+from gorget.plugins import CallableRecognizer, Entity
+from gorget.vault import Vault
+
+injection = PromptInjection(classifier=acme_classifier, injection_labels=["jailbreak", "prompt_leak"])
+
+def contract_numbers(text, language):
+    for m in re.finditer(r"\bCTR-\d{6}\b", text):
+        yield Entity("CONTRACT_NUMBER", m.start(), m.end(), 0.9)
+
+anonymize = Anonymize(Vault(), recognizers=[CallableRecognizer(contract_numbers, entities=["CONTRACT_NUMBER"])])
+anonymize.scan("Договор CTR-123456")  # 'Договор [REDACTED_CONTRACT_NUMBER_1]'
+```
+
+Сервер API принимает те же плагины по пути импорта в YAML-конфиге или через entry points.
+Подробности — в разделе [Свои модели](docs/customization/custom_models.md).
+
+## Атаки из нескольких сообщений
+
+```python
+from gorget.conversation import ConversationRisk, scan_conversation
+
+result = scan_conversation(scanners, messages, risk=ConversationRisk.from_scanner(injection))
+```
+
+`scan_conversation` принимает историю диалога в формате OpenAI и, кроме последнего сообщения,
+проверяет последние сообщения пользователя вместе (инструкция, разбитая на части), ответы
+инструментов (непрямая инъекция) и по желанию риск, накопленный за диалог. У сервера для этого
+есть `/analyze/conversation`. Что это ловит, а что нет, — в разделе
+[Атаки из нескольких сообщений](docs/tutorials/conversations.md).
 
 ## Сервер API
 

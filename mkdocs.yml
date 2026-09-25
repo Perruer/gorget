@@ -99,6 +99,7 @@ nav:
     - Across 100+ LLMs (LiteLLM): tutorials/litellm.md
     - Langchain: tutorials/notebooks/langchain.ipynb
     - Retrieval-augmented Generation: tutorials/rag.md
+    - Multi-turn attacks: tutorials/conversations.md
     - Secure RAG with Langchain: tutorials/notebooks/langchain_rag.ipynb
     - Secure RAG with LlamaIndex: tutorials/notebooks/llama_index_rag.ipynb
     - Secure Agents with Langchain: tutorials/notebooks/langchain_agents.ipynb
@@ -147,6 +148,7 @@ nav:
     - Client: api/client.md
   - Changelog: changelog.md
   - Customization:
+      - Your own models: customization/custom_models.md
       - Add scanner: customization/add_scanner.md
 
 extra_css:
